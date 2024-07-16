@@ -1,10 +1,11 @@
-rDUINOScope_2024_Big_Update
+# rDUINOScope_2024_Big_Update
 
-A modified version of rDUINOScope that works with Adafruit 3.5" 320X480 TFT SPI mode, Updated to the latest firmware version V_2.3.1.
+##  I worked on the 10 April 2020 Khairey's Nouhe rDUINOSCOPE version with Adafruit 3.5" screen.
+## This is a modified version of rDUINOScope by Khairey Nouhe that works with Adafruit 3.5" 320X480 TFT SPI mode, Updated to the latest firmware version V_2.3.1.
 
-Based on 10 April 2020 Khairey's Nouhe version with Adafruit screen.
+The mprovments I made are here :
 
-Update Tuesday 16/07/2024 with corrected bug and many new features and catalogs :
+Update Tuesday 16/07/2024 with corrected bugs and many new features and catalogs :
 
 corrected bugs :
 
@@ -18,6 +19,7 @@ corrected bugs :
 
 Added :
 
+- Same wiring than Khairey Nouhe design with all functionalities but focuser and fan connectors
 - Previously add dew point information.
 - Previously double goto speed.
 - Previously center joystick tracks and orthogonality of both axes in software (for my component, look at the previous video, 1h05m)
