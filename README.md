@@ -12,7 +12,7 @@
 - Previously corrected autoguiding : now works.
 - Status bar : Auto and OFF superposition message for meridian flip.
 - Coordinates Page : RA, DEC and HA inversion, DEC format error (missing a ":", and was in HA box : Workaround found because correct it directly make bluetooth no longer works. Now DEC in right format and BT works)
-- LST and AZ/H error due to bad summer time parameters for France. Corrected for France, check the code to adjust for other countries. (same change days as for Italy (by default), but GMT + 1 for winter and GMT + 2 for summer.
+- LST and AZ/H error due to bad summer time parameters for France. Corrected for France, check the code to adjust for other countries. (same change days as for Italy (by default), but GMT + 1 for winter and GMT + 2 for summer).
 - Corrected an error in dayno formula that causes a shift in RA for planets.
 - Corrected an error in Moon computing formulas and add precise information data.
 - Corrected errors in Moon computing formulas resolving issue : RA went false or negative on Moon Goto.
@@ -30,7 +30,7 @@
 - Previously add dew point information.
 - Previously double goto speed.
 - Previously center joystick tracks and orthogonality of both axes in software (for my component, look at the previous video, 1h05m)
-- Joystick directions more intuitive : left : RA return, right : RA forward. Up : DEC North, Down : DEC South.
+- Joystick directions more intuitive : left : RA return, right : RA forward.
 - Add fine manual move on BlueTooth app, works great with Skysafari, works with stellarium plus but very long latency.
 - Bluetooth works, tested with Skysafari 6, 7, stellarium mobile plus and Stellarium desktop.
 - Store position, to memorize any position and goto back function to recall this position. Useful for keeping a frame camera when needed to go elsewhere (ex goto bright star for Bahtinov focusing and then go back to the target)
@@ -49,9 +49,15 @@
 - Custom catalog with up to 240 entries : completed with Collinder catalog and special objects : 84 entries.
 - Deleted double references in NGC, IC catalogs and cross references with other catalogs. Priority : Messier, NGC, IC.
 - All new catalogs sorted by constellation : less time to move from one to the other ! Buttons now show name, constellation and magnitude.
-- All catalogs loaded in the same array : Same SRAM usage but now more than 2800 objects !
+- All catalogs loaded in the same array : Same SRAM usage but now more than 3000 objects !
 - New Autoguiding background : deleted circle RA, DEC, Focus. New landscape.
 - Add new planet info from J2000 (1st January 2000 @ 12h GMT), previous information was approximate computed info for 2013 from J2000 data. Now starting computing from J2000 original information with better precision : On a test date, error values for internal planets was RA/DEC 4-5m/20-30'. External planets was 0-3m/2-5' (except 15-20' DEC for Mars and Neptune). Now internal planets at this test date are in range RA/DEC error : 1-2m/8-13'. External planets : 0-2m/2-7'. Tested on random dates between 2024-2044, for all planets, error are within -5m to +2m RA / -13' to 13' DEC, most values <10'.
+
+### miscellaneous :
+
+- Complete tutorial construction on YouTube.
+-  French :
+-  English :
 
 ### All changes in code are tagged by // Add JG, // End add JG, // Modif JG, for easily look at the modifications.
 ===========================================================
