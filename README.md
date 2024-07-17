@@ -15,7 +15,8 @@
 - LST and AZ/H error due to bad summer time parameters for France. Corrected for France, check the code to adjust for other countries. (same change days as for Italy (by default), but GMT + 1 for winter and GMT + 2 for summer).
 - Corrected an error in dayno formula that causes a shift in RA for planets.
 - Corrected an error in Moon computing formulas and add precise information data.
-- Corrected errors in Moon computing formulas resolving issue : RA went false or negative on Moon Goto.
+- Corrected errors in Moon computing formulas
+- RA went false or negative on Moon Goto : Corrected
 
 ### Added :
 
