@@ -34,7 +34,7 @@
 - Joystick directions more intuitive : left : RA return, right : RA forward.
 - Add fine manual move on BlueTooth app, works great with Skysafari, works with stellarium plus but very long latency.
 - Bluetooth works, tested with Skysafari 6, 7, stellarium mobile plus and Stellarium desktop.
-- Store position, to memorize any position and goto back function to recall this position. Useful for keeping a frame camera when needed to go elsewhere (ex goto bright star for Bahtinov focusing and then go back to the target)
+- Add Store position utility : To memorize any position and goto back function to recall this position. Useful for keeping a frame camera when needed to go elsewhere (ex goto bright star for Bahtinov focusing and then go back to the target)
 - Touchscreen calibration tool added (button was in option page but not activated). New calibration tool was created to help unshift touchzones with display. The tool can display the new correction parameters, and store it in SD card. Parameters can be fine tuned by editing "OPTION.TXT" in SD card. Four last values are : Slope in x, Slope in y, Intercept in x and intercept in y. A function can restore to default and erase SD card calibration data in case of bad calibration. Look at code comment for further informations.
 - New load menu with cool JWST's creation pillars background :-)
 - Checked Messier Catalog and update informations abouts objects, such as name and distance.
