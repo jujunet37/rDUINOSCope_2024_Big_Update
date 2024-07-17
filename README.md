@@ -41,7 +41,7 @@
 - Move M111 and M112, which don't exist in Messier catalog, now in NGC catalog.
 - Now around 3000 objets in database !
 - New NGC catalog with 2400 objects :
-	- All objects in Northern hemishere down to -35° DEC, Magnitude < 13. Then filtering objects by a selection by taking into account the atmospheric extinction : ojects with Magnitude < 10 at -35° to -25° DEC, Magnitude < 11 at -25 to -20° DEC. Magnitude < 12.5 at -20 to -15° DEC. Magnitude 13 and lower for DEC > -20°.
+	- All objects in Northern hemishere down to -35° DEC, Magnitude < 13. Then filtering objects by a selection by taking into account the atmospheric extinction : ojects with Magnitude < 10 at -35° to -25° DEC, Magnitude < 11 at -25 to -20° DEC. Magnitude < 12.5 at -20 to -15° DEC. Magnitude 13 and lower for DEC > -15°.
 	- NGC catalog divided in 5 parts with 480 item each. Each part with a magnitude range, for a variety of apertures.
 - 186 IC catalog objetcs with same magnitude references as NGC catalog above, with no cross references with NGC.
 - 172 Bright stars catalog for focusing purpose.
