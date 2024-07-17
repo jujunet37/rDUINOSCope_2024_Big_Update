@@ -10,7 +10,7 @@
 ### corrected bugs :
 
 - Previously corrected autoguiding : now works.
-- Status bar : Auto and OFF superposition message for meridian flip.
+- Status bar : Auto and OFF superposition message for meridian flip : corrected.
 - Coordinates Page : RA, DEC and HA inversion, DEC format error (missing a ":", and was in HA box : Workaround found because correct it directly make bluetooth no longer works. Now DEC in right format and BT works)
 - LST and AZ/H error due to bad summer time parameters for France. Corrected for France, check the code to adjust for other countries. (same change days as for Italy (by default), but GMT + 1 for winter and GMT + 2 for summer).
 - Corrected an error in dayno formula that causes a shift in RA for planets.
