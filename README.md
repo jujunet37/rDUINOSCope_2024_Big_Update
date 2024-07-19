@@ -1,6 +1,6 @@
 # rDUINOScope_2024_Big_Update
 
-# I worked on the 10 April 2020 Khairey's Nouhe rDUINOSCOPE version with Adafruit 3.5" screen and this is my first release.
+# I worked on the 10 April 2020 Khairey Nouhe's rDUINOSCOPE version with Adafruit 3.5" screen and this is my first release.
 ## This is a modified version of rDUINOScope by Khairey Nouhe that works with Adafruit 3.5" 320X480 TFT SPI mode, Updated to the latest firmware version V_2.3.1.
 
 ### The improvements I made are here :
