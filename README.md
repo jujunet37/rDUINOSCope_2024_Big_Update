@@ -24,7 +24,7 @@
 
 - Same wiring than Khairey Nouhe design with all functionalities but focuser and fan connectors.
 - Now PCB is provided, gerber files are in the package.
-- Internal fan for box cooling, controlled by the UI.
+- Internal cooling fan, controlled by the UI.
 
 ### Software :
 
