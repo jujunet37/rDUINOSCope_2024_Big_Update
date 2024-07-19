@@ -50,6 +50,7 @@
 - Custom catalog with up to 240 entries : completed with Collinder catalog and special objects : 84 entries.
 - Deleted double references in NGC, IC catalogs and cross references with other catalogs. Priority : Messier, NGC, IC.
 - All new catalogs sorted by constellation : less time to move from one to the other ! Buttons now show name, constellation and magnitude.
+- Bunch of new information data (distance, separation and color for double stars, period, type for variable stars, etc...)
 - All catalogs loaded in the same array : Same SRAM usage but now more than 3000 objects !
 - New Autoguiding background : deleted circle RA, DEC, Focus. New landscape.
 - Add new planet info from J2000 (1st January 2000 @ 12h GMT), previous information was approximate computed info for 2013 from J2000 data. Now starting computing from J2000 original information with better precision : On a test date, error values for internal planets was RA/DEC 4-5m/20-30'. External planets was 0-3m/2-5' (except 15-20' DEC for Mars and Neptune). Now internal planets at this test date are in range RA/DEC error : 1-2m/8-13'. External planets : 0-2m/2-7'. Tested on random dates between 2024-2044, for all planets, error are within -5m to +2m RA / -13' to 13' DEC, most values <10'.
