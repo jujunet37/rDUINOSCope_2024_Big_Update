@@ -56,9 +56,9 @@ const String HardwareVersion = "AstrogatinesPCB V.1.0";
 
 // Default values to load when CANCEL button is hit on the GPS screen ( Change by your Home Location!)
 
-float OBSERVATION_LONGITUDE = 0.5716; // (Semblancay)
-float OBSERVATION_LATTITUDE = 47.4952; // (Semblancay)
-float OBSERVATION_ALTITUDE = 127.00; // (Semblancay)
+float OBSERVATION_LONGITUDE = 0.0000; // (Type your location)
+float OBSERVATION_LATTITUDE = 47.0000; // (Type your location)
+float OBSERVATION_ALTITUDE = 100.00; // (Type your location)
 int TIME_ZONE = 1;                   // France
 // .............................................................
 unsigned long startTime;
@@ -70,12 +70,12 @@ unsigned int  duration;
 // NB: RA and DEC uses the same gear ratio (144 tooth in my case)!
 //----------------------------------------------
 #ifdef serial_debug
-int WORM = 144;
+int WORM = 144; // For NEQ5 (144 teeth on both axies)
 #else
-int WORM = 144;
+int WORM = 144; // for NEQ5
 #endif
-int REDUCTOR = 3;      // 1:4 gear reduction
-int DRIVE_STP = 400;   // Stepper drive have 200 steps per revolution
+int REDUCTOR = 3;      // 1:3 gear reduction 16 and 48 teeth pulleys
+int DRIVE_STP = 400;   // Stepper drive have 400 steps per revolution
 int MICROSteps = 16;   // I'll use 1/16 microsteps mode to drive sidereal - also determines the LOWEST speed.
 
 // below variables are used to calculate the paramters where the drive works
