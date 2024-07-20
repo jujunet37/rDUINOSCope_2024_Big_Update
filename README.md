@@ -58,8 +58,8 @@
 ### miscellaneous :
 
 - Complete tutorial construction on YouTube.
--  French :
--  English :
+-  French : https://www.youtube.com/watch?v=rhm9jwSgXOs
+-  English : https://www.youtube.com/watch?v=H-uTFNglyio
 
 ### All changes in code are tagged by // Add JG, // End add JG, // Modif JG, for easily look at the modifications.
 ===========================================================
