@@ -116,7 +116,7 @@ ly = (ly-intery)/slopey;
  // If after calibration the touch part of the screen no longuer work, something has gone wrong. Don't panic, in this case, edit the Options.txt file and replace the last 4 values ​​with 1,1,0,0, This resets the values ​​to zero.
 
     else if (CURRENT_SCREEN == 9) {
-      if (lx > 0 && lx < 150 && ly > 0 && ly < 150 && counttl < 6) { // detect touch on top left corner and create mean sampling value
+      if (lx > 0 && lx < 150 && ly > 0 && ly < 150 && counttl < 6) { // detect touch on top left corner and create min-max sampling value
       if (counttl == 0) {topleftcalx = lx; topleftcaly = ly;}
       if (topleftcalx > lx) {topleftcalx = lx;}
       if (topleftcaly > ly) {topleftcaly = ly;}
@@ -125,7 +125,7 @@ ly = (ly-intery)/slopey;
       tft.fillRect(0, 0, 15, 15, GREEN);
       }}
       
-      if (lx > 170 && lx < 320 && ly > 0 && ly < 150 && counttr < 6) { // detect touch on top right corner and create mean sampling value
+      if (lx > 170 && lx < 320 && ly > 0 && ly < 150 && counttr < 6) { // detect touch on top right corner and create min-max  sampling value
       if (counttr == 0) {toprightcalx = lx; toprightcaly = ly;}
       if (toprightcalx < lx) {toprightcalx = lx;}
       if (toprightcaly > ly) {toprightcaly = ly;}
@@ -134,7 +134,7 @@ ly = (ly-intery)/slopey;
       tft.fillRect(305, 0, 320, 15, GREEN);
       }}
     
-      if (lx > 0 && lx < 150 && ly > 330 && ly < 480 && countbl < 6) { // detect touch on bottom left corner and create mean sampling value
+      if (lx > 0 && lx < 150 && ly > 330 && ly < 480 && countbl < 6) { // detect touch on bottom left corner and create min-max  sampling value
       if (countbl == 0) {botleftcalx = lx; botleftcaly = ly;}
       if (botleftcalx > lx) {botleftcalx = lx;}
       if (botleftcaly < ly) {botleftcaly = ly;}
@@ -143,7 +143,7 @@ ly = (ly-intery)/slopey;
       tft.fillRect(0, 465, 15, 480, GREEN);
       }}
       
-      if (lx > 170 && lx < 320 && ly > 330 && ly < 480 && countbr < 6) { // detect touch on bottom right corner and create mean sampling value
+      if (lx > 170 && lx < 320 && ly > 330 && ly < 480 && countbr < 6) { // detect touch on bottom right corner and create min-max  sampling value
       if (countbr == 0) {botrightcalx = lx; botrightcaly = ly;}
       if (botrightcalx < lx) {botrightcalx = lx;}
       if (botrightcaly < ly) {botrightcaly = ly;}
