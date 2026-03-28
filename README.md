@@ -28,7 +28,7 @@
 
 
 
-Be specific when searching. Engine look in the first catalog, stop when found 50 objects with entered string is there. Go to the second, etc... Stop when 250 objects limit is reach. Engine don't look at planets names.
+Be specific when searching. Engine look in the first catalog, stop when found 50 objects with the entered string. Go to the second, etc... Stop when 250 objects limit is reached. Engine don't look at planets names.
 
 
 
