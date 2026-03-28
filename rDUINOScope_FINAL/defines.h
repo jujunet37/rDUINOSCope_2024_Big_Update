@@ -30,7 +30,7 @@
 #define  note_C     1912    // 523 Hz
 #define  note_X     1650    //
 
-const String ss_planet_names[11] = {"SUN", "MERCURY", "VENUS", "EARTH", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO", "MOON"};
+const char* ss_planet_names[] = {"SUN", "MERCURY", "VENUS", "EARTH", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO", "MOON"};
 
 //Updated with high precision J2000 mean orbital elements
 
@@ -92,15 +92,14 @@ const volatile double tabb[15][5]
   {2, -1, -1,  1,    2463},
 };
 
-const String Stars[] =
-{
+const char Stars[][50] PROGMEM = {
   // Definition of the ALIGNMENT Stars. Add as many stars as you like in here
   "And;Almaak;2h4m;42.3°",
   "And;Alpheratz;0h8m;29.1°",
   "And;Mirach;1h10m;35.6°",
   "Aql;Altair;19h51m;8.9°",
-  "Aql;Althalimain;19h6m;-4.9°",
-  "Aql;Deneb el Okab;19h5m;13.9°",
+  "Aql;Al Thalimain;19h6m;-4.9°",
+  "Aql;Deneb Al Okab;19h5m;13.9°",
   "Aql;Tarazed;19h46m;10.6°",
   "Aqr;Sadalmelik;22h6m;-0.3°",
   "Aqr;Sadalsuud;21h32m;-5.6°",
@@ -145,7 +144,7 @@ const String Stars[] =
   "Col;Phact;5h40m;-34.1°",
   "Col;Wazn;5h51m;-35.8°",
   "CrB;Alphecca;15h35m;26.7°",
-  "Crv;Algorel;12h30m;-16.5°",
+  "Crv;Algorab;12h30m;-16.5°",
   "Crv;Gienah Ghurab;12h16m;-17.5°",
   "Crv;Kraz;12h34m;-23.4°",
   "Crv;Minkar;12h10m;-22.6°",
@@ -155,7 +154,7 @@ const String Stars[] =
   "Cyg;Gienah;20h46m;34°",
   "Cyg;Sadr;20h22m;40.3°",
   "Dra;Aldhibah;17h9m;65.7°",
-  "Dra;Aldhibain;16h24m;61.5°",
+  "Dra;Athebyne;16h24m;61.5°",
   "Dra;Edasich;15h25m;59°",
   "Dra;Eltanin;17h57m;51.5°",
   "Dra;Rastaban;17h30m;52.3°",
@@ -210,7 +209,7 @@ const String Stars[] =
   "Ori;Saiph;5h48m;-9.7°",
   "Ori;Tabit;4h50m;7°",
   "Peg;Algenib;0h13m;15.2°",
-  "Peg;Baham;22h10m;6.2°",
+  "Peg;Biham;22h10m;6.2°",
   "Peg;Enif;21h44m;9.9°",
   "Peg;Homam;22h41m;10.8°",
   "Peg;Markab;23h5m;15.2°",
@@ -230,7 +229,7 @@ const String Stars[] =
   "Sco;Lesath;17h31m;-37.3°",
   "Sco;Shaula;17h34m;-37.1°",
   "Sco;We;16h50m;-34.3°",
-  "Ser;Alava;18h21m;-2.9°",
+  "Ser;Alya;18h56m;4.2°",
   "Ser;Unukalhai;15h44m;6.4°",
   "Sgr;Albaldah;9h10m;-21°",
   "Sgr;Alnasl;18h6m;-30.4°",

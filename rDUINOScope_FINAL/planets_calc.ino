@@ -17,8 +17,8 @@ void planet_pos(int pno)
   hh = hour();
   mm = minute();
 
-  OBJECT_NAME = ss_planet_names[pno];
-
+  safeStringCopy(OBJECT_NAME, ss_planet_names[pno], sizeof(OBJECT_NAME));
+    
 #ifdef serial_debug
   Serial.print("pno = ");
   Serial.println(pno);
@@ -54,7 +54,7 @@ void planet_pos(int pno)
     z[pno] = r[pno] * (sin(v[pno] + pl[pno] * rads - o[pno] * rads)) * sin(i[pno] * rads);
     X[pno] = x[pno] - x[3];
     Y[pno] = y[pno] - y[3];
-    Z[pno] = z[pno];
+    Z[pno] = z[pno] - z[3]; // -z[3] /!\ was missing
 
     double ec = 23.439292 * rads;
     Xq[pno] = X[pno];
@@ -87,20 +87,21 @@ void planet_pos(int pno)
     }
 
     //Some object details can be added in this code. Remember that pno is the number of the planet starting from 0 (Sun) to 9 (Pluto) with 10 (Moon)
-    if (pno == 0)
-      OBJECT_DETAILS = "The Sun is the star at the center of the Solar System";
-    else
-    {
-      OBJECT_DETAILS = OBJECT_NAME + " is the " + pno;
-      if (pno == 1)
-        OBJECT_DETAILS += "st ";
-      else if (pno == 2)
-        OBJECT_DETAILS += "nd ";
-      else
-        OBJECT_DETAILS += "th ";
-      OBJECT_DETAILS += "planet of our Solar System.";
-      if (pno == 9)
-        OBJECT_DETAILS += "\nFormally in 2006, during the 26th General Assembly ofInternational Astronomical Union, Pluto has been reclassified as dwarf planet.";
+    if (pno == 0) {
+      safeStringCopy(OBJECT_DETAILS, "The Sun is the star at the center of the Solar System", sizeof(OBJECT_DETAILS));
+    } else {
+      char details[200];
+      const char* suffix = "th ";
+      if (pno == 1) suffix = "st ";
+      else if (pno == 2) suffix = "nd ";
+      
+      snprintf(details, sizeof(details), "%s is the %d%s planet of our Solar System.", 
+               OBJECT_NAME, pno, suffix);
+      
+      if (pno == 9) {
+        strcat(details, "\nFormally in 2006, during the 26th General Assembly of International Astronomical Union, Pluto has been reclassified as dwarf planet.");
+      }
+      safeStringCopy(OBJECT_DETAILS, details, sizeof(OBJECT_DETAILS));
     }
 
 #ifdef serial_debug
@@ -122,7 +123,7 @@ void planet_pos(int pno)
     const double T4 = T * T * T * T;
     const double ec = (23.43929 - 0.01300417 * T - 0.0000001638889*T2 - 0.0000005036111*T3); //JG modification
 
-    double Lm = 218.3164477 + 481267.88123421 * T - 0.0015786 * T2 + T3 / 538841 - T4 / 65194000; // JG corrected error on formula -T4, vwas +T4, updated values
+    double Lm = 218.3164477 + 481267.88123421 * T - 0.0015786 * T2 + T3 / 538841 - T4 / 65194000; // JG corrected error on formula -T4, was +T4, updated values
     while (Lm > 360) Lm -= 360;
     while (Lm < 0) Lm += 360;
 
@@ -210,7 +211,6 @@ void planet_pos(int pno)
     sigma1 = sigma1 + 3958 * sin(A1 * rads) + 1962 * sin((Lm - F) * rads) + 318 * sin(A2 * rads);
     sigma2 = sigma2 - 2235 * sin(Lm * rads) + 382 * sin(A3 * rads) + 175 * sin((A1 - F) * rads) + 175 * sin((A1 + F) * rads) + 127 * sin ((Lm - Mm) * rads) - 115 * sin((Lm + Mm) * rads);
 
-
 #ifdef serial_debug
     Serial.print("sigma1 = ");
     Serial.println(sigma1);
@@ -238,18 +238,6 @@ void planet_pos(int pno)
     Serial.println(alpha);
     Serial.print("delta = ");
     Serial.println(delta);
-    Serial.print("arg(asin) = ");
-    Serial.println((sin(beta * rads)*cos(ec) + cos(beta * rads)*sin(ec)*sin(lambda * rads)));
-    Serial.print("sin(beta*rads) = ");
-    Serial.println(sin(beta * rads));
-    Serial.print("cos(ec) = ");
-    Serial.println(cos(ec));
-    Serial.print("cos(beta*rads) = ");
-    Serial.println(cos(beta * rads));
-    Serial.print("sin(ec) = ");
-    Serial.println(sin(ec));
-    Serial.print("sin(lambda*rads) = ");
-    Serial.println(sin(lambda * rads));
 #endif
 
     alpha /= 15;  //to convert to degs
@@ -261,31 +249,31 @@ void planet_pos(int pno)
     int mult = 1;
     if (delta < 0) mult = -1;
     OBJECT_DEC_D = floor(abs(delta)) * mult;
-    OBJECT_DEC_M = (abs(delta) - abs(OBJECT_DEC_D)) * 6;
+    OBJECT_DEC_M = (abs(delta) - abs(OBJECT_DEC_D)) * 60;
     OBJ_DEC = mult * (abs(OBJECT_DEC_D) + OBJECT_DEC_M / 100);
 
     //Calculation of the ILLUMINATED FRACTION OF MOON
-    double i = 180 - D - 6.280 * sin(Mm * rads)
+    double i_illum = 180 - D - 6.280 * sin(Mm * rads)
                + 2.100 * sin(Ms * rads)
                - 1.274 * sin((2 * D - Mm) * rads)
                - 0.658 * sin(2 * D * rads)
                - 0.214 * sin(2 * Mm * rads)
                - 0.111 * sin(D * rads);
 
-    double k = round((1 + cos(i * rads)) / 2 * 10000) / 100.0;
+    double k = round((1 + cos(i_illum * rads)) / 2 * 10000) / 100.0;
 
-    OBJECT_DETAILS = "The Moon is the natural satellite of our planet. Right now it is approximately ";
-    OBJECT_DETAILS += floor(r);
-    OBJECT_DETAILS += " km away from the Earth and the illuminated portion of the disk is equal to ";
-    OBJECT_DETAILS += k;
-    OBJECT_DETAILS += "%";
+    char moonDetails[300];
+    snprintf(moonDetails, sizeof(moonDetails), 
+             "The Moon is the natural satellite of our planet. Right now it is approximately %.0f km away from the Earth and the illuminated portion of the disk is equal to %.1f%%",
+             r, k);
+    safeStringCopy(OBJECT_DETAILS, moonDetails, sizeof(OBJECT_DETAILS));
 
 #ifdef serial_debug
     Serial.println("MOON coordinates: ");
 #endif
   }
 
-  OBJECT_DESCR = "";  //Still not using OBJECT_DESCR for Solar System planets. May be used in some way?
+  safeStringCopy(OBJECT_DESCR, "", sizeof(OBJECT_DESCR));  //Still not using OBJECT_DESCR for Solar System planets.
 
 #ifdef serial_debug
   Serial.print("OBJ_RA = ");
