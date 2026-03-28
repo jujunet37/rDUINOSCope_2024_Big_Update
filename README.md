@@ -138,8 +138,8 @@ Be specific when searching. Engine look in the first catalog, stop when found 50
 
 
 * Complete tutorial construction on YouTube.
-* French :
-* English :
+* French : https://youtu.be/6-61nRDWkmA
+* English : https://youtu.be/PrEs-5IPebA
 
 
 
