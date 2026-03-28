@@ -101,7 +101,7 @@ Be specific when searching. Engine look in the first catalog, stop when found 50
 
 * Edit rDUIUNOScope\_FINAL and type you location on lines 191 to 193. Change worm settings (205 to 207). Flash Arduino code
 * Copy files to the micro SD card (new ASCOM image files)
-* Install the ASCOM driver (require ASCOM platform, tested on 7.1 Update 1)
+* Install the ASCOM driver (require ASCOM platform, tested on 7.1 Update 1
 
 
 
@@ -137,7 +137,7 @@ Be specific when searching. Engine look in the first catalog, stop when found 50
 
 
 
-* Complete tutorial construction on YouTube.
+* Setup video on YouTube.
 * French : https://youtu.be/6-61nRDWkmA
 * English : https://youtu.be/PrEs-5IPebA
 
