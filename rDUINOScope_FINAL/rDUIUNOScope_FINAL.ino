@@ -1,6 +1,3 @@
-
-
-// Alignment , Coordinates
 //    rDUINOScope - Arduino based telescope control system (GOTO).
 //    Copyright (C) 2016 Dessislav Gouzgounov (Desso)
 //    This program is free software: you can redistribute it and/or modify
@@ -35,30 +32,165 @@
 #include <Time.h>
 #include "TouchScreen.h"
 #include <SdFat.h>
-#include <DueTimer.h> // interruptions library
+#include <DueTimer.h>
 #include <DS3231.h>
 #include <math.h>
 #include <TimeLib.h>
 #include "defines.h"
-#include "DFRobotDFPlayerMini.h"
+//#include "DFRobotDFPlayerMini.h"
+#include <string.h>
 
-DFRobotDFPlayerMini mp3;
 char textBuff[20];
-#define serial_debug       // comment out to deactivate the serial debug mode
+//#define serial_debug       // comment out to deactivate the serial debug mode
 #define use_battery_level // comment out to deactivate battery level option
 
+//// New search engine screen feature
+#define SCREEN_LOAD_MENU 15
+#define SCREEN_SEARCH_OBJECT 16
+// Button types
+#define BUTTON_PRIMARY 0
+#define BUTTON_SECONDARY 1
+#define BUTTON_GO 2
+#define BUTTON_CANCEL 3
+// Colors
+#define LIGHTBLUE 0x7D7C
+#define LIGHTGRAY 0xC618
+#define DARKGRAY 0x7BEF
+#define BLUE 0x001F
+#define RED 0xF800
+#define GREEN 0x07E0
+#define YELLOW 0xFFE0
+#define WHITE 0xFFFF
+#define BLACK 0x0000
+// Search vars
+char searchQuery[50] = "";
+char searchResults[50][50]; // Stores the names of the results
+char searchCatalog[50][20]; // Stores the catalog of each result
+float searchRA[50];
+float searchDEC[50];
+int searchResultCount = 0;
+int selectedResult = -1;
+int currentSearchPage = 0;
+// keyboard
+int keyboardCursor = 0;
+bool keyboardVisible = true; // always visible
+// Definitions of the enlarged keyboard
+char keyboardLayout[4][10] = {
+    {'1','2','3','4','5','6','7','8','9','0'},
+    {'Q','W','E','R','T','Y','U','I','O','P'},
+    {'A','S','D','F','G','H','J','K','L','_'},
+    {'Z','X','C','V','B','N','M','<',' ',' '}
+};
+// scrollbar vars
+int scrollOffset = 0;
+int totalResults = 0;
+
+
+//// ASCOM variables added
+
+// Global vars
+volatile bool ascomConnected = false;
+unsigned long lastSend = 0;
+unsigned long lastASCOMMove = 0;
+const unsigned long ASCOM_PROTECTION_TIME = 500; // 500ms protection after ASCOM movement
+volatile bool isAtHome = false;
+volatile bool isAtPark = false;
+volatile bool isParkOperation = false;
+volatile bool isHomeOperation = false;
+bool MERFLIPRESET = false;
+unsigned long Slew_Timer_flag = 0;
+
+// === SERIAL COMM VARS ===
+#define SERIAL_OUTPUT_BUFFER_SIZE 512
+#define SERIAL_INPUT_BUFFER_SIZE 100
+// Serial Buffers
+char serialOutputBuffer[SERIAL_OUTPUT_BUFFER_SIZE];
+volatile uint16_t outputHead = 0;
+volatile uint16_t outputTail = 0;
+volatile bool serialTxActive = false;
+char serialInputBuffer[SERIAL_INPUT_BUFFER_SIZE];
+volatile uint8_t inputIndex = 0;
+// command flags 
+volatile bool slewCommandReceived = false;
+volatile bool moveCommandReceived = false;
+volatile bool parkCommandReceived = false;
+volatile bool homeCommandReceived = false;
+volatile bool trackingCommandReceived = false;
+volatile bool stopCommandReceived = false;
+// Buffers waiting commands
+char pendingSlewCommand[100];
+char pendingMoveCommand[100];
+char pendingParkCommand[100];
+char pendingTrackingCommand[100];
+bool IS_CRITICAL_MOVEMENT = false;
+bool locationSent = false;
+bool guideCommandReceived = false;
+char pendingGuideCommand[50];
+unsigned long guideStartTime = 0;
+int guideDuration = 0;
+bool isGuiding = false;
+char currentGuideDirection[20] = "";
+unsigned long lastGuidePulse = 0;
+const int GUIDE_PULSE_INTERVAL = 2;
+bool trackingPending = false;
+bool slewascomsent = false;
+bool syncCommandReceived = false;
+char pendingSyncCommand[128] = {0};
+
+volatile bool moveActive = false;
+enum MoveAxis_e { MOVE_AXIS_NONE = 0, MOVE_AXIS_RA, MOVE_AXIS_DEC };
+volatile MoveAxis_e moveAxis = MOVE_AXIS_NONE;
+volatile bool moveDirPositive = true;
+volatile int moveMicroStepMode = 16;
+volatile float moveRate = 0.0;
+unsigned long move_lastMicros = 0;
+uint8_t move_pulseState = 0; // 0 = idle / ready to set HIGH, 1 = HIGH, waiting to set LOW
+const unsigned long move_pulseHighMicros = 1000UL;
+const unsigned long move_pulseLowMicros  = 1000UL;
+
+bool DEC_accelerationDone = false;
+bool RA_accelerationDone = false;
+int DEC_accel_step = 0;
+int RA_accel_step = 0;
+
+bool trackingWasActiveBeforeMove = false;
+
+//End ASCOM variables
+
+// === GLOBAL VARS FOR HARDWARE TIMERS ===
+volatile bool slewRA_active = false;
+volatile bool slewDEC_active = false;
+volatile long slewRA_targetSteps = 0;
+volatile long slewDEC_targetSteps = 0;
+volatile int slewRA_currentDir = LOW;
+volatile int slewDEC_currentDir = LOW;
+
+// Flag to check if the slew has been initialized
+bool slewInitialized = false;
+static unsigned long lastDecelCheck = 0;
+//----------------
+
+#define RA_START_DELAY_MS 5000  // Start RA delay (milliseconds)
+// Decel thesholds
+#define DECEL_THRESHOLD_MODE_8  30000  // Go 16 to 8
+#define DECEL_THRESHOLD_MODE_4  15000   // Go 8 to 4
+#define DECEL_THRESHOLD_MODE_2  10000   // Go 4 to 2
+#define DECEL_THRESHOLD_MODE_1  5000   // Go 2 to 1
+unsigned long RA_startRequestTime = 0;  // Moment where RA start
+bool RA_waitingToStart = false;
+//----------------
+
 // Firmware & Hardware Versions
-const String FirmwareDate = "9/4/2020";
-const String FirmwareNumber = "v2.3.1 Boiana-Adafruit";
-const String FirmwareName = "rDUINOScope Boiana-EQ V2.3.1";
-const String FirmwareTime = "12:00:00";
-const String HardwareVersion = "AstrogatinesPCB V.1.0";
+const char FirmwareDate[] PROGMEM = "9/4/2020";
+const char FirmwareNumber[] PROGMEM = "v2.3.1 Boiana-Adafruit";
+const char FirmwareName[] PROGMEM = "rDUINOScope Boiana-EQ V2.3.1";
+const char FirmwareTime[] PROGMEM = "12:00:00";
 
 // Default values to load when CANCEL button is hit on the GPS screen ( Change by your Home Location!)
 
 float OBSERVATION_LONGITUDE = 0.0000; // (Type your location)
 float OBSERVATION_LATTITUDE = 47.0000; // (Type your location)
-float OBSERVATION_ALTITUDE = 100.00; // (Type your location)
+float OBSERVATION_ALTITUDE = 0.00; // (Type your location)
 int TIME_ZONE = 1;                   // France
 // .............................................................
 unsigned long startTime;
@@ -69,11 +201,8 @@ unsigned int  duration;
 // ---------------------------------------------
 // NB: RA and DEC uses the same gear ratio (144 tooth in my case)!
 //----------------------------------------------
-#ifdef serial_debug
+
 int WORM = 144; // For NEQ5 (144 teeth on both axies)
-#else
-int WORM = 144; // for NEQ5
-#endif
 int REDUCTOR = 3;      // 1:3 gear reduction 16 and 48 teeth pulleys
 int DRIVE_STP = 400;   // Stepper drive have 400 steps per revolution
 int MICROSteps = 16;   // I'll use 1/16 microsteps mode to drive sidereal - also determines the LOWEST speed.
@@ -97,6 +226,10 @@ int Tracking_type = 1;  // 1: Sidereal, 2: Solar, 0: Lunar;
 int Clock_Sidereal;  // Variable for the Interruptions. nterruption is initialized depending on the DATA above -in miliseconds
 int Clock_Solar;  // Variable for the Interruptions. nterruption is initialized depending on the DATA above -in miliseconds
 int Clock_Lunar;  // Variable for the Interruptions. nterruption is initialized depending on the DATA above -in miliseconds
+
+// NEW BRIGHTNESS CONTROL
+volatile int pwm_duty = 255; // 0-255
+volatile int pwm_counter = 0;
 
 ///////////////////////////////////////////////////// Modules Setup /////////////////////////////////////////////////////
 
@@ -147,7 +280,6 @@ int Joy_SW = A9;
 int x_cal, y_cal = 0;
 
 int FAN1 = 25;
-//int FAN2 = A3;
 int speakerOut = DAC1;         // Was 2
 int BAT_PIN = A7;             //Analog channel A7 as used to measure BAT_PIN voltage
 
@@ -165,20 +297,6 @@ int DEC_DIR = 7;
 int DEC_MODE0 = 10; // PC29
 int DEC_MODE1 = 9; // PC21
 int DEC_MODE2 = 8; // PC22
-
-////////////////////////// Focus Motor Setup //////////////////////////////////
-//int Focus_EN = 51;
-//int focus_step_pin = 29;
-//int focus_dir_pin = 27;
-
-//int encoderCLK = 22;
-//int encoderDT = 35;
-//const int encoderSW = 33;  // Reading Push Button switch on the Rotary Encoder
-
-//int Focus_Motor_position = 50; // The initial/home position of focus motor
-//int encoderCLKLast = LOW;
-//int encoderState = LOW;
-//int Focus_StepsToTake = 50;    // Controls the resolution of the Focus Stepper
 
 ////////////////////////Auto Guiding Setup ////////////////////////////////////
 int RA_PlusPin = 24;
@@ -200,13 +318,10 @@ static uint8_t ch2_data = LEVEL_LOW;
 static uint8_t ch3_data = LEVEL_LOW;
 ////////////////////////////////////////////////////////////////////////////////////
 
-// Variables:
-String OBJ_Array[240]; // Add JG for new catalogues
-String CAT_NAME = "";
-// End JG
-
-String ObservedObjects[50];
-String Iter_Stars[50];
+char OBJ_Array[240][200]; // Array for Dynamic loading catalogs
+char CAT_NAME[50] = "";
+char ObservedObjects[50][300];
+char Iter_Stars[50][100];
 int int_star_count = 0;       // Counter for how many stars are loaded into Iter_Stars[] array.... to be used with Pages, so that it does not show more pages than needed
 int Observed_Obj_Count = 0;
 int ALLIGN_STEP = 0;  // Using this variable to count the allignment steps - 1: Synchronize, 2: Allign and Center, 3:....
@@ -214,15 +329,15 @@ int ALLIGN_TYPE = 0;  // Variable to store the alignment type (0-Skip Alignment,
 float delta_a_RA = 0;
 float delta_a_DEC = 0;
 int Iterative_Star_Index = 0;
-String Prev_Obj_Start;
+char Prev_Obj_Start[10] = "";
 int lastScreenUpdateTimer;
 unsigned long Slew_timer, Slew_RA_timer = 0;
 int OBJECT_Index;
-String OBJECT_NAME;
-String OBJECT_DESCR;
-String OBJECT_DETAILS;
-String BT_COMMAND_STR;
-String START_TIME;
+char OBJECT_NAME[100] = "";
+char OBJECT_DESCR[200] = "";
+char OBJECT_DETAILS[500] = "";
+char BT_COMMAND_STR[200] = "";
+char START_TIME[10] = "";
 int STP_FWD = LOW;
 int STP_BACK = HIGH;
 float OBJECT_RA_H;
@@ -231,9 +346,6 @@ float OBJECT_DEC_D;
 float OBJECT_DEC_M;
 float OBJECT_MAG;
 float curr_RA_H, curr_RA_M, curr_RA_S, curr_DEC_D, curr_DEC_M, curr_DEC_S;    // Global variables to store Mount's current RA and DEC.
-
-// add JG
-
 float mem_RA_H, mem_RA_M, mem_DEC_D, mem_DEC_M = 0;  // Add mem position function
 float slopex ; // slopes and intercept variables for screen calibration.
 float slopey ; 
@@ -241,9 +353,6 @@ float interx ;
 float intery ; 
 int CAT_Page = 1; // Add JG for menu page index
 bool catstatus = true; //Add JG for catalog testing at bootup
-
-// End add JG
-
 char curr_RA_lz[8], curr_DEC_lz[9], curr_HA_lz[8], curr_DEC_lz_disp[9];                                               // Global variable to store current RA and DEC with Leading Zeroes and sign (RA: 00:00:00; DEC: +/-00*00:00) // Add JG variable for right format DEC display (see comments in Function and regular update sections). And resize chars array 8 characters for RA and HA and 9 for DEC, save memory.
 int SELECTED_STAR = 0;
 double DELTA_RA_ADJUST = 1; // cos RA
@@ -251,11 +360,10 @@ double DELTA_DEC_ADJUST = 1; // cos DEC
 int GPS_iterrations = 0;
 double LST, HAHour, HAMin, ALT, AZ;
 double JD;
-String BTs;
+char BTs[2000] = "";
 int last_button, STARS_PAGER, Bright_PAGER, Double_PAGER, Variable_PAGER, MESS_PAGER, NGC_PAGER1, NGC_PAGER2, NGC_PAGER3, NGC_PAGER4, NGC_PAGER5, IC_PAGER, CUSTOM_PAGER, OBJ_PAGER; // JG delete treas_pager and add for new catalogues
 boolean IS_TFT_ON = true;
 boolean IS_STEPPERS_ON = true;
-//boolean IS_FOCUS_ON = true;
 boolean IS_OBJ_VISIBLE = false;
 boolean IS_IN_OPERATION = false;  // This variable becomes True when Main screen appears
 boolean IS_TRACKING = false;
@@ -269,7 +377,7 @@ boolean IS_MERIDIAN_FLIP_AUTOMATIC = true;
 boolean IS_BT_MODE_ON = false;
 boolean IS_MANUAL_MOVE = false;
 boolean IS_FAN1_ON = true;
-boolean IS_GTMEM_ON = true;
+boolean IS_GTMEM_ON = false;
 boolean IS_CUSTOM_MAP_SELECTED = false;
 boolean IS_SOUND_ON = true;
 int TFT_Brightness = 255;
@@ -278,24 +386,21 @@ int CURRENT_SCREEN = 0;
 int LOAD_SELECTOR;   // selector to show which LOADING mechanism is used: 1 - Messier, 2 - File, 3 - NGCs
 boolean TRACKING_MOON;
 boolean sun_confirm = false;
-String Fan1_State = "ON";
-String GTMEM_State = "Free";
-String TFT_Time = "AL-ON";
-String Sound_State = "ON";
-String Stepper_State = "ON";
-
-//String Focus_Motor_State = "ON";
-
-String Mer_Flip_State = "Auto";
-String Tracking_Mode = "Celest";
-int RA_microSteps, DEC_microSteps, rev_RA_microSteps, rev_DEC_microSteps;              // Current position of the motors in MicroSteps! - when movement occures, values are changed accordingly (manual, tracking or slew to);
+char Fan1_State[10] = "OFF";
+char GTMEM_State[10] = "Free";
+char TFT_Time[10] = "AL-ON";
+char Sound_State[10] = "ON";
+char Stepper_State[10] = "ON";
+char Mer_Flip_State[10] = "Auto";
+char Tracking_Mode[10] = "Celest";
+long RA_microSteps, DEC_microSteps, rev_RA_microSteps, rev_DEC_microSteps;              // Current position of the motors in MicroSteps! - when movement occures, values are changed accordingly (manual, tracking or slew to);
 int RA_mode_steps, DEC_mode_steps;
 int SLEW_RA_microsteps, SLEW_DEC_microsteps;    // Where the mottors needs to go in order to point to the object
 int RA_finish_last = 0;
 int map_r = 0;    // Used to determine the StarMap Row ... image name (1-1.bmp; 1-2.bmp ....)
 int map_c = 0;    // Ued to determine the StarMap Column .... image name
-String old_t, old_d;
-String Start_date;
+char old_d[20] = "";
+char Start_date[20] = ""; 
 int update_time, Tupdate_time, TFT_timeout;
 unsigned long UPD_T, UPD_coord, DELAY_Slew, UPD_LST, TFT_Timer;
 int RA_move_ending;
@@ -325,14 +430,8 @@ double det = 0;
 
 ///////////////////////////////////////////////////// Void Setup Section /////////////////////////////////////////////////////
 void setup(void) {
-#ifdef serial_debug
   Serial.begin(57600);
   while (!Serial) {}
-#endif
-  Serial1.begin(9600);
-  mp3.begin(Serial1);
-  mp3.volume(5);  //Set volume value. From 0 to 30
-
   Serial2.begin(9600);  // Initialize GPS communication on PINs: 17 (RX) and 16 (TX)
   Serial3.begin(9600); // Bluetooth communication on PINs:  15 (RX) and 14 (TX)
   pinMode(speakerOut, OUTPUT);
@@ -356,7 +455,9 @@ void setup(void) {
   Serial.println(Clock_Sidereal, 6);
 #endif
 
-  analogWrite(TFTBright, 255);  // LCD Backlight brightness 255 = ~100%)
+  setupPWMBrightness();
+  setDisplayBrightness(1.0); // 100% at startup
+   
   SD.begin(SD_CS, SD_SPI_SPEED);
   rtc.begin();
   dht.begin();
@@ -391,35 +492,18 @@ void setup(void) {
   pinMode (DEC_PlusPin, INPUT);
   pinMode (DEC_MinusPin, INPUT);
 
-  ///////////////// Focus Motor Setup ///////////////////////
-//  pinMode (encoderCLK, INPUT);
-//  pinMode (encoderDT, INPUT);
-//  pinMode(encoderSW, INPUT);
-//  pinMode(Focus_EN, OUTPUT);
-//  digitalWrite(Focus_EN, HIGH); // Turn Off Focus Motor at startup
-//  pinMode(focus_dir_pin, OUTPUT);
-//  pinMode(focus_step_pin, OUTPUT);
-//  digitalWrite(encoderSW, HIGH); // Pull-Up resistor for switch
-
-  //digitalWrite(RA_DIR,HIGH); // Set Dir high
-  //digitalWrite(RA_STP,LOW);
-  //digitalWrite(DEC_DIR,HIGH); // Set Dir high
-  //digitalWrite(DEC_STP,LOW);
-
   // Joystick
   pinMode(xPin, INPUT);
   pinMode(yPin, INPUT);
 
   // Device 1 & 2 command Pins
   pinMode(FAN1, OUTPUT);
-//  pinMode(FAN2, OUTPUT);
 
   // Set RA and DEC microstep position
   RA_microSteps = RA_90; //  --> point to North Sudereal Pole = -180 deg (-12h)
   DEC_microSteps = 0; //  --> Point to North Sudereal Pole = 90 deg
 
   Timer3.attachInterrupt(Sidereal_rate);
-  //  Timer3.start(Clock_Sidereal); // executes the code every 62.329 ms.
 
   if (analogRead(DAY_NIGHT_PIN) < 800)
   {
@@ -466,7 +550,6 @@ void setup(void) {
     Time_area_font = BLACK;
   }
 
-
   ///////////////////////////////////////////////////// Boot-up Procedures /////////////////////////////////////////////////////
   // The below part cannot be removed form the code
   // You can add messages, but not remove!
@@ -492,10 +575,15 @@ void setup(void) {
 
   // see if the card is present and can be initialized:
   char in_char;
-  String items = "";
+  char items[256] = "";  // Size adjusted to the maximum length of a line
+  int items_index = 0;
+  
   int j = 0;
   int k = 0;
-  Bright_PAGER = 0; // Add JG Add new catalogues
+
+  // Pagers for catalogs
+  
+  Bright_PAGER = 0;
   Double_PAGER = 0;
   Variable_PAGER = 0;
   MESS_PAGER = 0;
@@ -507,9 +595,6 @@ void setup(void) {
   IC_PAGER = 0;
   STARS_PAGER = 0;
   CUSTOM_PAGER = 0;
-
-  // End add JG
-
 
   volatile bool check = true;
   tft.print("--> Initializing touchscreen... ");
@@ -545,12 +630,7 @@ void setup(void) {
   {
     tft.setTextColor(GREEN);
     tft.print("OK   ");
-
-#ifdef serial_debug
     tft.println(rtc.getTemp());
-#else
-    tft.println("");
-#endif
     tft.setTextColor(l_text);
   }
 
@@ -688,9 +768,6 @@ void setup(void) {
   tft.println("--> initializing BlueTooth...");
   tft.println("--> initializing GPS...");
   tft.println("--> Powering Steppers up...");
-#ifndef serial_debug
-  if (check == false)  while (1); //don't do anything more
-#endif
 
   calibrateJoypad(&x_cal, &y_cal);
 
@@ -704,47 +781,114 @@ void setup(void) {
   delay(500);
   CURRENT_SCREEN = 0;
   drawGPSScreen();
-  //CURRENT_SCREEN = 1;
-  //drawClockScreen();
-  //CURRENT_SCREEN = 3;
-  //drawSelectAlignment();
-  //CURRENT_SCREEN = 4;
-  //drawMainScreen();
-  //CURRENT_SCREEN = 5;
-  //drawCoordinatesScreen() ;
-  //CURRENT_SCREEN = 6;
-  //drawLoadScreen();
-  //CURRENT_SCREEN = 7;
-  //drawOptionsScreen();
-  //CURRENT_SCREEN=10;
-  //drawSTATScreen();
-  //CURRENT_SCREEN = 11;
-  //drawStarMap();
-  //CURRENT_SCREEN=12;
-  //drawStarSyncScreen();
-  //CURRENT_SCREEN = 14;
-  //drawAutoGuidingScreen();
-  //CURRENT_SCREEN = 15;
-  //drawConfirmSunTrack();
+
   /////////////////////////////////////////////////////////////////////////////
   UPD_T = millis();
   UPD_LST = millis();
   DELAY_Slew = millis();
   TFT_Timer = millis();
-  //TFT_timeout = 0;
   RA_move_ending = 0;
   considerTempUpdates();
   // Turn Telescope Steppers ON at Startup by default to enable ALignment and Manual motor control
   digitalWrite(RA_EN, LOW);
   digitalWrite(DEC_EN, LOW);
-//  digitalWrite(Focus_EN, LOW);
-  Stepper_State = "ON";
+  safeStringCopy(Stepper_State, "ON", sizeof(Stepper_State));
   IS_STEPPERS_ON = true;
-//  Focus_Motor_State = "ON";
-//  IS_FOCUS_ON = true; // Turn focus motor ON at Startup by default.
+
+///////////// SETUP ASCOM COMMUNICATION
+
+// Configure serial interrupts
+    USART1->US_IER = US_IER_TXRDY | US_IER_RXRDY;
+    NVIC_EnableIRQ(USART1_IRQn);
+    
+// Initialize the communication variables
+    outputHead = 0;
+    outputTail = 0;
+    serialTxActive = false;
+    inputIndex = 0;
+    
+    slewCommandReceived = false;
+    moveCommandReceived = false;
+    parkCommandReceived = false;
+    homeCommandReceived = false;
+    trackingCommandReceived = false;
+    stopCommandReceived = false;
+    
+    memset(pendingSlewCommand, 0, sizeof(pendingSlewCommand));
+    memset(pendingMoveCommand, 0, sizeof(pendingMoveCommand));
+    memset(pendingParkCommand, 0, sizeof(pendingParkCommand));
+    memset(pendingTrackingCommand, 0, sizeof(pendingTrackingCommand));
+
 }
 ///////////////////////////////////////////////////// Void Loop Section /////////////////////////////////////////////////////
 void loop(void) {
+
+//Add JG ASCOM
+// Serial communication (USB/ASCOM)
+
+runMoveTask();
+
+if ((trackingWasActiveBeforeMove) && (millis()-lastASCOMMove)>200 && IS_OBJ_FOUND) {
+        IS_TRACKING = true;
+        startTracking();
+        sendTrackingStatus();
+        trackingWasActiveBeforeMove=0;
+}
+
+    if (slewCommandReceived) {
+        handleSlewCommand(pendingSlewCommand);
+        slewCommandReceived = false;
+    }
+    
+    if (moveCommandReceived) {
+        handleMoveCommand(pendingMoveCommand);
+        moveCommandReceived = false;
+    }
+    
+    if (parkCommandReceived) {
+        handleParkCommand(pendingParkCommand);
+        parkCommandReceived = false;
+    }
+    
+    if (homeCommandReceived) {
+        handleHomeCommand();
+        homeCommandReceived = false;
+    }
+    
+    if (trackingCommandReceived) {
+        handleTrackingCommand(pendingTrackingCommand);
+        trackingCommandReceived = false;
+    }
+    
+    if (stopCommandReceived) {
+        handleStopCommand();
+        stopCommandReceived = false;
+    }
+
+    if (syncCommandReceived) {
+    handleSyncCommand(pendingSyncCommand);
+    syncCommandReceived = false;
+    pendingSyncCommand[0] = '\0';
+    }
+
+    if (guideCommandReceived) {
+        handleGuideCommand(pendingGuideCommand);
+        guideCommandReceived = false;
+    }
+    processSerialBuffer();
+    processGuiding();
+    
+    // === PERIODIC COORDINATE SEND ===
+    if (millis() - lastSend > 2000) {
+        Current_RA_DEC();
+        sendTelescopeCoordinates();
+        lastSend = millis();
+    }
+
+if (IS_CRITICAL_MOVEMENT && (millis() - lastASCOMMove) > ASCOM_PROTECTION_TIME) {
+    IS_CRITICAL_MOVEMENT = false;
+}
+// End add ASCOM
 
   // AutoGuiding control .... if Any!
   if (CURRENT_SCREEN == 14 && digitalRead (Guiding_Sense) == HIGH)
@@ -763,15 +907,7 @@ void loop(void) {
       drawAutoGuidingScreen();
       IS_CONNECTED = true;
     }
-    
-    
-    
-    //Timer3.stop(); //
-    //IS_TRACKING = false;
-    //IS_IN_OPERATION = false;
-    
-    
-    
+
     IS_PulseGuiding = true;
     CURRENT_SCREEN = 14;
     considerPulseGuiding();
@@ -793,14 +929,6 @@ void loop(void) {
     }
     CURRENT_SCREEN = 14;
     drawAutoGuidingScreen();
-    
-    
-    
-    //Timer3.stop(); //
-    //IS_TRACKING = false;
-    //IS_IN_OPERATION = false;
-    
-    
     IS_PulseGuiding = true;
     considerPulseGuiding();
   } else if (CURRENT_SCREEN == 14 && digitalRead (Guiding_Sense) == LOW && IS_CONNECTED == true && IS_PulseGuiding == true )
@@ -820,62 +948,50 @@ void loop(void) {
     IS_CONNECTED = false;
   }
 
-  // Focus Motor Control .... if Any!
-//  if (IS_FOCUS_ON == true)
-//  {
-//    consider_focus_control();
-//  }
-
   // This is done in order to prevent multiple calculations of LST_HA per second (especially while SlewTo) and only
   // do it once the DEC SlewTo slows down, but before stopping OR once every 10 seconds (in order to do the Meridian Flip)
 
-  if (RA_move_ending == 1) {
-    calculateLST_HA();
-  }
+  if (RA_move_ending == 1 && (millis() - lastASCOMMove) > ASCOM_PROTECTION_TIME) {  //Modif ASCOM
+  calculateLST_HA();
+}
 
-  if ((IS_MERIDIAN_FLIP_AUTOMATIC) && ((UPD_LST + 10000) <= millis()) && (IS_OBJ_FOUND == true)) {
-    calculateLST_HA();
-    UPD_LST = millis();
-  }
+  if ((IS_MERIDIAN_FLIP_AUTOMATIC) && ((UPD_LST + 10000) <= millis()) && (IS_OBJ_FOUND == true) && (millis() - lastASCOMMove) > ASCOM_PROTECTION_TIME) {  //Modif ASCOM
+  calculateLST_HA();
+  UPD_LST = millis();
+}
 
   // Adding this delay to SLOW DOWN the Arduino so that the motors can catch up!
   // The delay is only needed when in full speed.... otherways the CalculateLST_HA() takes over and
   // slows down the arduino enough. CalculateLST_HA() when slewing only fires when the motors slows down
   // after they are very close to the Object Position.
-  if ((DELAY_Slew + 1 <= millis()) && (IS_OBJ_FOUND == false)) {
 
-    // If you wonder how I get to this delay - 800 uS
-    // When I optimised the code for speed, the main delay was coming from calculateLST_HA() which back then was calculated on every Loop();
-    // Once I optimized it to only calculate when the SlewTo stops (to fine tune after DEC stops) it turned out that
-    // the code is too fast and the motors only "screemed" but not rotating - due to the low voltage/current.
-    // This variable depends on How You Limit the Current to your motors and the Voltage you use!
-    // I use 12V and 1.6A (70% in full step = 1.10A) to drive my NEMA 17 SY42STH47-1684B Motors.
-    // Please note that Potentiometer does not really give consistent results for current on every restart (it drifted between 1.12A - 0.9A).
-
-    // HINT: you can try to play with the Current/Voltage that powers the motors to get faster speeds.
-    if (IS_STEPPERS_ON) {
-      cosiderSlewTo();
-    } else {
-      IS_OBJECT_RA_FOUND = true;
-      IS_OBJECT_DEC_FOUND = true;
-      IS_OBJ_FOUND = true;
-      RA_move_ending = 0;
-    }
-    DELAY_Slew = millis();
-    // delayMicroseconds(800);
+if ((DELAY_Slew + 10 <= millis()) && (IS_OBJ_FOUND == false)) {   /// 1 dans l'original à la place de 10
+  if (IS_STEPPERS_ON) {
+    cosiderSlewTo_NonBlocking();
+  } else {
+    IS_OBJECT_RA_FOUND = true;
+    IS_OBJECT_DEC_FOUND = true;
+    IS_OBJ_FOUND = true;
+    RA_move_ending = 0;
+    slewInitialized = false;  // <-- AJOUTER
+    stopSlewRA();
+    stopSlewDEC();
   }
+  DELAY_Slew = millis();
+}
 
-  // The below part of the code makes sure that the system does NOT process any other inputs while SlweingTo!
-  // Since both motors need every STEP to come from Arduino board, it needs it's entire power to run the motors in fastest possible way
-  // The fastes possible from this board in the current state of the software is approx 3 turns/sec (600 steps/sec)
-  // IS_OBJ_FOUND == true --> Means that SLEW command have completed
-  //
-  if (IS_OBJ_FOUND == true)
+if (IS_OBJ_FOUND == true || (IS_OBJ_FOUND == false && Serial3.available() > 0)) 
+  
   {
     // BLUETOOTH Considerations ? ... if any
     if ((IS_BT_MODE_ON == true) && (Serial3.available() > 0) && (IS_MANUAL_MOVE == false))
     {
-      BT_COMMAND_STR = Serial3.readStringUntil('#');
+      //BT_COMMAND_STR = Serial3.readStringUntil('#');
+      char buffer[256]; // Buffer temporaire
+      int bytesRead = Serial3.readBytesUntil('#', buffer, sizeof(buffer) - 1);
+      buffer[bytesRead] = '\0'; // Null-terminator
+      safeStringCopy(BT_COMMAND_STR, buffer, sizeof(BT_COMMAND_STR));
+
 #ifdef serial_debug
       Serial.println(BT_COMMAND_STR);
 #endif
@@ -908,9 +1024,10 @@ void loop(void) {
 
     // This will take care of turning OFF the TFT's background light if the device is not used
     // for XXX amont of seconds and IS_IN_OPERATION = TRUE
+
     if ((TFT_timeout > 0) && (millis() - TFT_Timer > TFT_timeout) && (IS_TFT_ON) && (IS_IN_OPERATION))
     {
-      analogWrite(TFTBright, 0);
+      setDisplayBrightness(0);
       IS_TFT_ON = false;
     }
 
@@ -947,12 +1064,20 @@ void loop(void) {
 
     // OTHER UPDATES ?  ... if any
     // Happens every 2 seconds
-    if (((millis() - UPD_T) > 2000) && (IS_MANUAL_MOVE == false))
-    {
+    if (((millis() - UPD_T) > 2000) && (IS_MANUAL_MOVE == false) && (millis() - lastASCOMMove) > ASCOM_PROTECTION_TIME) {
+
       calculateLST_HA();  // Make sure it Updates the LST! used on Main Screen and When Calculating current Coords.
       considerTimeUpdates();
       considerDayNightMode();
       considerTempUpdates();
+
+      // Add MF correction
+      if (((millis() - Slew_timer) > 120000) && (MERFLIPRESET = true)) {
+      MERFLIPRESET = false;
+      MERIDIAN_FLIP_DO = false;
+      }
+
+      
       // I need to make sure the Drives are not moved to track the stars,
       // if Object is below horizon ALT < 0 - Stop tracking.
       if ((ALT <= 0) && (IS_TRACKING == true) && (IS_IN_OPERATION == true))
@@ -960,6 +1085,7 @@ void loop(void) {
         IS_TRACKING = false;
         Timer3.stop();
         drawMainScreen();
+        sendTrackingStatus();
       }
       UPD_T = millis();
     }

@@ -21,37 +21,57 @@
 //  - Bluetooth communication (both ways);
 //
 void considerBTCommands() {
-
-  if ((BT_COMMAND_STR != ":GR") && (BT_COMMAND_STR != ":GD") && (BT_COMMAND_STR != "")) {
+if ((strcmp(BT_COMMAND_STR, ":GR") != 0) && (strcmp(BT_COMMAND_STR, ":GD") != 0) && (strcmp(BT_COMMAND_STR, "") != 0)) {
     if (IS_SOUND_ON) {
       SoundOn(note_c, 8);
     }
-    BTs += "\r\n";
-    BTs += rtc.getTimeStr(FORMAT_LONG);
-    BTs += ": ";
-    BTs += BT_COMMAND_STR;
+    strcat(BTs, "\r\n");
+    strcat(BTs, rtc.getTimeStr(FORMAT_LONG));
+    strcat(BTs, ": ");
+    strcat(BTs, BT_COMMAND_STR);
   }
 
-  if (BT_COMMAND_STR.indexOf("synClock") > 0) {
-    // :synClock HH:MM:SS:YYYY:M:D:SummerTime#
-    int i = BT_COMMAND_STR.indexOf("synClock");
-    String date_time = BT_COMMAND_STR.substring(i + 9, BT_COMMAND_STR.length());
-    int k0 = date_time.indexOf(":");
-    int k1 = date_time.indexOf(":", k0 + 1);
-    int k2 = date_time.indexOf(":", k1 + 1);
-    int hh = date_time.substring(0, k0).toInt();
-    int mm = date_time.substring(k0 + 1, k1).toInt();
-    int ss = date_time.substring(k1 + 1, k2).toInt() + 1;
+  if (strstr(BT_COMMAND_STR, "synClock") != NULL) {
+    char date_time[50];
+    char* synPos = strstr(BT_COMMAND_STR, "synClock");
+    strcpy(date_time, synPos + 9);
+    
+    char* k0 = strchr(date_time, ':');
+    char* k1 = strchr(k0 + 1, ':');
+    char* k2 = strchr(k1 + 1, ':');
+    
+    char hh_str[3], mm_str[3], ss_str[3];
+    strncpy(hh_str, date_time, k0 - date_time);
+    hh_str[k0 - date_time] = '\0';
+    strncpy(mm_str, k0 + 1, k1 - k0 - 1);
+    mm_str[k1 - k0 - 1] = '\0';
+    strncpy(ss_str, k1 + 1, k2 - k1 - 1);
+    ss_str[k2 - k1 - 1] = '\0';
+    
+    int hh = atoi(hh_str);
+    int mm = atoi(mm_str);
+    int ss = atoi(ss_str) + 1;
     rtc.setTime(hh, mm, ss);
-    int k3 = date_time.indexOf(":", k2 + 1);
-    int k4 = date_time.indexOf(":", k3 + 1);
-    int k5 = date_time.indexOf(":", k4 + 1);
-    int yy = date_time.substring(k2 + 1, k3).toInt();
-    int mo = date_time.substring(k3 + 1, k4).toInt();
-    int dd = date_time.substring(k4 + 1, k5).toInt();
-    Summer_Time = date_time.substring(k5 + 1, date_time.length()).toInt();
+    
+    char* k3 = strchr(k2 + 1, ':');
+    char* k4 = strchr(k3 + 1, ':');
+    char* k5 = strchr(k4 + 1, ':');
+    
+    char yy_str[5], mo_str[3], dd_str[3], st_str[3];
+    strncpy(yy_str, k2 + 1, k3 - k2 - 1);
+    yy_str[k3 - k2 - 1] = '\0';
+    strncpy(mo_str, k3 + 1, k4 - k3 - 1);
+    mo_str[k4 - k3 - 1] = '\0';
+    strncpy(dd_str, k4 + 1, k5 - k4 - 1);
+    dd_str[k5 - k4 - 1] = '\0';
+    strcpy(st_str, k5 + 1);
+    
+    int yy = atoi(yy_str);
+    int mo = atoi(mo_str);
+    int dd = atoi(dd_str);
+    Summer_Time = atoi(st_str);
     rtc.setDate(dd, mo, yy);
-
+    
     Serial3.print("synClock: ");
     Serial3.print(rtc.getTimeStr(FORMAT_LONG));
     Serial3.print(" ");
@@ -59,34 +79,52 @@ void considerBTCommands() {
     Serial3.print(" summer_time=");
     Serial3.print(Summer_Time);
     Serial3.println(" .....(OK)");
+    
+    BT_COMMAND_STR[0] = '\0';
+  }
 
-    BT_COMMAND_STR = "";
-  }
-  if (BT_COMMAND_STR.indexOf("synGPS") > 0) {
+if (strstr(BT_COMMAND_STR, "synGPS") != NULL) {
     // :synGPS LAT:LONG:ALT:TZ# (TZ = time zone)
-    int i = BT_COMMAND_STR.indexOf("synGPS");
-    String gps_str = BT_COMMAND_STR.substring(i + 7, BT_COMMAND_STR.length());
-    int k0 = gps_str.indexOf(":");
-    int k1 = gps_str.indexOf(":", k0 + 1);
-    int k2 = gps_str.indexOf(":", k1 + 1);
-    OBSERVATION_LATTITUDE = gps_str.substring(0, k0).toFloat();
-    OBSERVATION_LONGITUDE = gps_str.substring(k0 + 1, k1).toFloat();
-    OBSERVATION_ALTITUDE = gps_str.substring(k1 + 1, k2).toFloat();
-    TIME_ZONE = gps_str.substring(k2 + 1, gps_str.length()).toInt();
-    Serial3.print("synGPS: ");
-    Serial3.print(OBSERVATION_LATTITUDE, 6);
-    Serial3.print(" | ");
-    Serial3.print(OBSERVATION_LONGITUDE, 6);
-    Serial3.print(" | ");
-    Serial3.print(OBSERVATION_ALTITUDE, 2);
-    Serial3.println(" .....(OK)");
-    BT_COMMAND_STR = "";
-  }
-  if (BT_COMMAND_STR.indexOf("gotoHome") > 0) {
+    char* synPos = strstr(BT_COMMAND_STR, "synGPS");
+    char gps_str[100];
+    strcpy(gps_str, synPos + 7);
+    
+    // Remove final # end if present
+    char* hashPos = strchr(gps_str, '#');
+    if (hashPos != NULL) *hashPos = '\0';
+    
+    // Find separators
+    char* k0 = strchr(gps_str, ':');
+    char* k1 = strchr(k0 + 1, ':');
+    char* k2 = strchr(k1 + 1, ':');
+    
+    if (k0 != NULL && k1 != NULL && k2 != NULL) {
+        // Extract les values
+        *k0 = '\0'; // End LAT part
+        *k1 = '\0'; // End LONG part
+        *k2 = '\0'; // End ALT part
+        
+        OBSERVATION_LATTITUDE = atof(gps_str);
+        OBSERVATION_LONGITUDE = atof(k0 + 1);
+        OBSERVATION_ALTITUDE = atof(k1 + 1);
+        TIME_ZONE = atoi(k2 + 1);
+        
+        Serial3.print("synGPS: ");
+        Serial3.print(OBSERVATION_LATTITUDE, 6);
+        Serial3.print(" | ");
+        Serial3.print(OBSERVATION_LONGITUDE, 6);
+        Serial3.print(" | ");
+        Serial3.print(OBSERVATION_ALTITUDE, 2);
+        Serial3.println(" .....(OK)");
+    }
+    BT_COMMAND_STR[0] = '\0';
+}
+
+if (strstr(BT_COMMAND_STR, "gotoHome") != NULL) {
     IS_TRACKING = false;
     Timer3.stop();
-    OBJECT_NAME = "CP";
-    OBJECT_DESCR = "Celestial pole";
+    safeStringCopy(OBJECT_NAME, "CP", sizeof(OBJECT_NAME));
+    safeStringCopy(OBJECT_DESCR, "Celestial pole", sizeof(OBJECT_DESCR));
     OBJECT_RA_H = 12;
     OBJECT_RA_M = 0;
     OBJECT_DEC_D = 90;
@@ -95,52 +133,60 @@ void considerBTCommands() {
     IS_OBJECT_RA_FOUND = false;
     IS_OBJECT_DEC_FOUND = false;
     Slew_timer = millis();
-    Slew_RA_timer = Slew_timer + 20000;   // Give 20 sec. advance to the DEC. We will revise later.
-    OBJECT_DETAILS = "The north and south celestial poles are the two imaginary points in the sky where the Earth's axis of rotation, intersects the celestial sphere";
-  }
-  if (BT_COMMAND_STR == "RD_priv") {
+    Slew_RA_timer = Slew_timer + 20000;
+    safeStringCopy(OBJECT_DETAILS, "The north and south celestial poles are the two imaginary points in the sky where the Earth's axis of rotation, intersects the celestial sphere", sizeof(OBJECT_DETAILS));
+    sendTrackingStatus();
+    BT_COMMAND_STR[0] = '\0';
+}
+
+if (strcmp(BT_COMMAND_STR, "RD_priv") == 0) {
     Current_RA_DEC();
     Serial3.print("Right Ascension: ");
     Serial3.println(curr_RA_lz);
     Serial3.print("Declination: ");
     Serial3.print(curr_DEC_lz);
-    BT_COMMAND_STR = "";
-  }
-  // :AP# - Start Tracking
-  if (BT_COMMAND_STR == ":AP") {
-    if (IS_TRACKING == false) {
-      IS_TRACKING = true;
+    BT_COMMAND_STR[0] = '\0';
+}
 
-      if (Tracking_type == 1) { // 1: Sidereal, 2: Solar, 0: Lunar;
-        Timer3.start(Clock_Sidereal);
-      } else if (Tracking_type == 2) {
-        Timer3.start(Clock_Solar);
-      } else if (Tracking_type == 0) {
-        Timer3.start(Clock_Lunar);
-      }
-      drawMainScreen();
+// :AP# - Start Tracking
+if (strcmp(BT_COMMAND_STR, ":AP") == 0) {
+    if (IS_TRACKING == false) {
+        IS_TRACKING = true;
+
+        if (Tracking_type == 1) { // 1: Sidereal, 2: Solar, 0: Lunar;
+            Timer3.start(Clock_Sidereal);
+        } else if (Tracking_type == 2) {
+            Timer3.start(Clock_Solar);
+        } else if (Tracking_type == 0) {
+            Timer3.start(Clock_Lunar);
+        }
+        drawMainScreen();
+        sendTrackingStatus();
     }
-    BT_COMMAND_STR = "";
-  }
-  // :AL#  - Stop Tracking
-  if (BT_COMMAND_STR == ":AL") {
+    BT_COMMAND_STR[0] = '\0';
+}
+
+// :AL#  - Stop Tracking
+if (strcmp(BT_COMMAND_STR, ":AL") == 0) {
     if (IS_TRACKING == true) {
-      IS_TRACKING = false;
-      Timer3.stop();
-      drawMainScreen();
+        IS_TRACKING = false;
+        Timer3.stop();
+        drawMainScreen();
+        sendTrackingStatus();
     }
-    BT_COMMAND_STR = "";
-  }
-  // :CM# or :CMR# - Sync with selected Object
-  if ((BT_COMMAND_STR == ":CM") || (BT_COMMAND_STR == ":CMR")) {
+    BT_COMMAND_STR[0] = '\0';
+}
+
+// :CM# or :CMR# - Sync with selected Object
+if ((strcmp(BT_COMMAND_STR, ":CM") == 0) || (strcmp(BT_COMMAND_STR, ":CMR") == 0)) {
     float HAHh;
     float HAMm;
     float HA_deci;
 
     if (HAHour >= 12) {
-      HAHh = HAHour - 12;
+        HAHh = HAHour - 12;
     } else {
-      HAHh = HAHour;
+        HAHh = HAHour;
     }
 
     HAMm = HAMin;
@@ -150,286 +196,307 @@ void considerBTCommands() {
     delta_a_DEC = (double(DEC_microSteps) - double(SLEW_DEC_microsteps)) / double(DEC_D_CONST);
 
     Serial3.print("Coordinates  matched #");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  // <0x06>  - Request Alignment Type
-  if (BT_COMMAND_STR == "") {
-    Serial3.print("P");   // A= if scope in Alt/Az Mode   // // L= if scope in Land mode  // P= if scope in Polar Mode
-    BT_COMMAND_STR = "";
-  }
+// <0x06>  - Request Alignment Type
+if (strcmp(BT_COMMAND_STR, "") == 0) {
+    Serial3.print("P");   // A= if scope in Alt/Az Mode, L= if scope in Land mode, P= if scope in Polar Mode
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  // :GR#  - Request RA coordinate
-  if (BT_COMMAND_STR == ":GR") {
+// :GR#  - Request RA coordinate
+if (strcmp(BT_COMMAND_STR, ":GR") == 0) {
     Current_RA_DEC();
     Serial3.print(curr_RA_lz);
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
-  // :GD#  - Request DEC coordinate
-  if (BT_COMMAND_STR == ":GD") {
+    BT_COMMAND_STR[0] = '\0';
+}
+
+// :GD#  - Request DEC coordinate
+if (strcmp(BT_COMMAND_STR, ":GD") == 0) {
     Current_RA_DEC();
     Serial3.print(curr_DEC_lz);
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  //  Request product version
-  if (BT_COMMAND_STR == ":GVP") {
+// Request product version
+if (strcmp(BT_COMMAND_STR, ":GVP") == 0) {
     Serial3.print(FirmwareName);
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  //  Request Firmware version
-  if (BT_COMMAND_STR == ":GVN") {
+// Request Firmware version
+if (strcmp(BT_COMMAND_STR, ":GVN") == 0) {
     Serial3.print(FirmwareNumber);
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  //  Request Firmware Date
-  if (BT_COMMAND_STR == ":GVD") {
+// Request Firmware Date
+if (strcmp(BT_COMMAND_STR, ":GVD") == 0) {
     Serial3.print(FirmwareDate);
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  //  Request Firmware Time
-  if (BT_COMMAND_STR == ":GVT") {
+// Request Firmware Time
+if (strcmp(BT_COMMAND_STR, ":GVT") == 0) {
     Serial3.print(FirmwareTime);
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  //  Request Current Site Longitude
-  if (BT_COMMAND_STR == ":Gg") {
+// Request Current Site Longitude
+if (strcmp(BT_COMMAND_STR, ":Gg") == 0) {
     Serial3.print(OBSERVATION_LONGITUDE, 6);
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  //  Request tracking rate
-  if (BT_COMMAND_STR == ":Gt") {
+// Request tracking rate
+if (strcmp(BT_COMMAND_STR, ":Gt") == 0) {
     Serial3.print("+43[223]28:00");
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  //  Request Current Date
-  if (BT_COMMAND_STR == ":GC") {
+// Request Current Date
+if (strcmp(BT_COMMAND_STR, ":GC") == 0) {
     Serial3.print(rtc.getDateStr(FORMAT_SHORT, FORMAT_LITTLEENDIAN, '/'));
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  //  Request Current Time
-  if (BT_COMMAND_STR == ":GL") {
+// Request Current Time
+if (strcmp(BT_COMMAND_STR, ":GL") == 0) {
     Serial3.print(rtc.getTimeStr(FORMAT_LONG));
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  //  Request UTC offset time
-  if (BT_COMMAND_STR == ":GG") {
+// Request UTC offset time
+if (strcmp(BT_COMMAND_STR, ":GG") == 0) {
     Serial3.print(TIME_ZONE);
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  //  Request GW  ??? Unkoran
-  if (BT_COMMAND_STR == ":GW") {
+// Request GW  ??? Unkoran
+if (strcmp(BT_COMMAND_STR, ":GW") == 0) {
     Serial3.print("AT2");
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-  //  Request currently selected object/target declination
-  if (BT_COMMAND_STR == ":Gd") {
+// Request currently selected object/target declination
+if (strcmp(BT_COMMAND_STR, ":Gd") == 0) {
     Serial3.print(curr_DEC_lz);
     Serial3.print("#");
-    BT_COMMAND_STR = "";
-  }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-// JG add Bluetooth commands
-
-if (BT_COMMAND_STR == ":Ms") {
+if (strcmp(BT_COMMAND_STR, ":Ms") == 0) {
     setmStepsMode("D", 8);
-    for (int i=0; i <=200; i++) {
-    digitalWrite(DEC_DIR, STP_BACK);
-    PIOC->PIO_SODR = (1u << 24);
-    delay(200/i);
-    PIOC->PIO_CODR = (1u << 24);
-    DEC_microSteps += DEC_mode_steps;
+    for (int i = 0; i <= 200; i++) {
+        digitalWrite(DEC_DIR, STP_BACK);
+        PIOC->PIO_SODR = (1u << 24);
+        delay(200 / i);
+        PIOC->PIO_CODR = (1u << 24);
+        DEC_microSteps += DEC_mode_steps;
     }
-    for (int i=0; i <=20; i++) {
-    digitalWrite(DEC_DIR, STP_BACK);
-    PIOC->PIO_SODR = (1u << 24);
-    delay(2*i);
-    PIOC->PIO_CODR = (1u << 24);
-    DEC_microSteps += DEC_mode_steps;
-  }}
+    for (int i = 0; i <= 20; i++) {
+        digitalWrite(DEC_DIR, STP_BACK);
+        PIOC->PIO_SODR = (1u << 24);
+        delay(2 * i);
+        PIOC->PIO_CODR = (1u << 24);
+        DEC_microSteps += DEC_mode_steps;
+    }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-if (BT_COMMAND_STR == ":Mn") {
+if (strcmp(BT_COMMAND_STR, ":Mn") == 0) {
     setmStepsMode("D", 8);
-    for (int i=0; i <=200; i++) {
-    digitalWrite(DEC_DIR, STP_FWD);
-    PIOC->PIO_SODR = (1u << 24);
-    delay(200/i);
-    PIOC->PIO_CODR = (1u << 24);
-    DEC_microSteps -= DEC_mode_steps;
+    for (int i = 0; i <= 200; i++) {
+        digitalWrite(DEC_DIR, STP_FWD);
+        PIOC->PIO_SODR = (1u << 24);
+        delay(200 / i);
+        PIOC->PIO_CODR = (1u << 24);
+        DEC_microSteps -= DEC_mode_steps;
     }
-    for (int i=0; i <=15; i++) {
-    digitalWrite(DEC_DIR, STP_FWD);
-    PIOC->PIO_SODR = (1u << 24);
-    delay(2*i);
-    PIOC->PIO_CODR = (1u << 24);
-    DEC_microSteps -= DEC_mode_steps;
-  }}
+    for (int i = 0; i <= 20; i++) {
+        digitalWrite(DEC_DIR, STP_FWD);
+        PIOC->PIO_SODR = (1u << 24);
+        delay(2 * i);
+        PIOC->PIO_CODR = (1u << 24);
+        DEC_microSteps -= DEC_mode_steps;
+    }
+    BT_COMMAND_STR[0] = '\0';
+}
 
-if (BT_COMMAND_STR == ":Mw") {
+if (strcmp(BT_COMMAND_STR, ":Mw") == 0) {
     setmStepsMode("R", 8);
-    if (IS_TRACKING == true) {Timer3.stop();}
-    for (int i=0; i <=200; i++) {
-    digitalWrite(RA_DIR, STP_FWD);
-    PIOC->PIO_SODR = (1u << 26);
-    delay(200/i);
-    PIOC->PIO_CODR = (1u << 26);
-    RA_microSteps -= RA_mode_steps;
-    }
-    for (int i=0; i <=15; i++) {
-    digitalWrite(RA_DIR, STP_FWD);
-    PIOC->PIO_SODR = (1u << 26);
-    delay(2*i);
-    PIOC->PIO_CODR = (1u << 26);
-    RA_microSteps -= RA_mode_steps;
-    if (IS_TRACKING == true) {
-    if (Tracking_type == 1) { // 1: Sidereal, 2: Solar, 0: Lunar;
-        Timer3.start(Clock_Sidereal);
-      } else if (Tracking_type == 2) {
-        Timer3.start(Clock_Solar);
-      } else if (Tracking_type == 0) {
-        Timer3.start(Clock_Lunar);
-      }}
-
+    if (IS_TRACKING == true) { Timer3.stop(); }
     
-    }}
+    for (int i = 0; i <= 200; i++) {
+        digitalWrite(RA_DIR, STP_FWD);
+        PIOC->PIO_SODR = (1u << 26);
+        delay(200 / i);
+        PIOC->PIO_CODR = (1u << 26);
+        RA_microSteps -= RA_mode_steps;
+    }
+    for (int i = 0; i <= 15; i++) {
+        digitalWrite(RA_DIR, STP_FWD);
+        PIOC->PIO_SODR = (1u << 26);
+        delay(2 * i);
+        PIOC->PIO_CODR = (1u << 26);
+        RA_microSteps -= RA_mode_steps;
+        if (IS_TRACKING == true) {
+            if (Tracking_type == 1) {
+                Timer3.start(Clock_Sidereal);
+            } else if (Tracking_type == 2) {
+                Timer3.start(Clock_Solar);
+            } else if (Tracking_type == 0) {
+                Timer3.start(Clock_Lunar);
+            }
+        }
+    }
+    sendTrackingStatus();
+    BT_COMMAND_STR[0] = '\0';
+}
 
-if (BT_COMMAND_STR == ":Me") {
+if (strcmp(BT_COMMAND_STR, ":Me") == 0) {
     setmStepsMode("R", 8);
-    if (IS_TRACKING == true) {Timer3.stop();}
-    for (int i=0; i <=200; i++) {
-    digitalWrite(RA_DIR, STP_BACK);
-    PIOC->PIO_SODR = (1u << 26);
-    delay(200/i);
-    PIOC->PIO_CODR = (1u << 26);
-    RA_microSteps += RA_mode_steps;
+    if (IS_TRACKING == true) { Timer3.stop(); }
+    
+    for (int i = 0; i <= 200; i++) {
+        digitalWrite(RA_DIR, STP_BACK);
+        PIOC->PIO_SODR = (1u << 26);
+        delay(200 / i);
+        PIOC->PIO_CODR = (1u << 26);
+        RA_microSteps += RA_mode_steps;
     }
-    for (int i=0; i <=15; i++) {
-    digitalWrite(RA_DIR, STP_BACK);
-    PIOC->PIO_SODR = (1u << 26);
-    delay(2*i);
-    PIOC->PIO_CODR = (1u << 26);
-    RA_microSteps += RA_mode_steps;
-    if (IS_TRACKING == true) {
-    if (Tracking_type == 1) { // 1: Sidereal, 2: Solar, 0: Lunar;
-        Timer3.start(Clock_Sidereal);
-      } else if (Tracking_type == 2) {
-        Timer3.start(Clock_Solar);
-      } else if (Tracking_type == 0) {
-        Timer3.start(Clock_Lunar);
-      }}
-  }}
-
-// End add JG
-
-  // :Sr 07:08:52# - Set Target RA
-  if (BT_COMMAND_STR.indexOf("Sr") > 0) {
-    // LX200 - RA Coordinates ()
-
-    int i = BT_COMMAND_STR.indexOf("Sr");
-    String _RA = BT_COMMAND_STR.substring(i + 2, BT_COMMAND_STR.length() - 1);
-    int k0 = _RA.indexOf(":");
-    int k1 = _RA.indexOf(":", k0 + 1);
-    OBJECT_DETAILS = "_RA:" + _RA;
-    OBJECT_RA_H = _RA.substring(0, k0).toFloat();
-    float RAse = 0;
-    if (_RA.substring(k1 + 1, _RA.length()).length() < 2) {
-      RAse = _RA.substring(k1 + 1, _RA.length()).toFloat() * 10;
-    } else {
-      RAse = _RA.substring(k1 + 1, _RA.length()).toFloat();
+    for (int i = 0; i <= 15; i++) {
+        digitalWrite(RA_DIR, STP_BACK);
+        PIOC->PIO_SODR = (1u << 26);
+        delay(2 * i);
+        PIOC->PIO_CODR = (1u << 26);
+        RA_microSteps += RA_mode_steps;
+        if (IS_TRACKING == true) {
+            if (Tracking_type == 1) {
+                Timer3.start(Clock_Sidereal);
+            } else if (Tracking_type == 2) {
+                Timer3.start(Clock_Solar);
+            } else if (Tracking_type == 0) {
+                Timer3.start(Clock_Lunar);
+            }
+        }
     }
-    OBJECT_RA_M = _RA.substring(k0 + 1, k1).toFloat() + RAse / 60;
-    Serial3.print("1");
-  }
-  // :Sd +18Я12:30#  - Set Target DEC
-  if (BT_COMMAND_STR.indexOf("Sd") > 0) {
-    // LX200 - DEC Coordinates ()
+    sendTrackingStatus();
+    BT_COMMAND_STR[0] = '\0';
+}
 
-    int i = BT_COMMAND_STR.indexOf("Sd");
-    String _DEC = BT_COMMAND_STR.substring(i + 2, BT_COMMAND_STR.length() - 1);
-    int k0 = 0;
-    if (_DEC.indexOf(223) > 0) {
-      k0 = _DEC.indexOf(223);
-    } else {
-      k0 = _DEC.indexOf("*");
+// :Sr 07:08:52# - Set Target RA
+if (strstr(BT_COMMAND_STR, "Sr") != NULL) {
+    char* srPos = strstr(BT_COMMAND_STR, "Sr");
+    char _RA[20];
+    strncpy(_RA, srPos + 2, strlen(BT_COMMAND_STR) - (srPos - BT_COMMAND_STR) - 3);
+    _RA[strlen(BT_COMMAND_STR) - (srPos - BT_COMMAND_STR) - 3] = '\0';
+    
+    char* k0 = strchr(_RA, ':');
+    char* k1 = strchr(k0 + 1, ':');
+    
+    if (k0 != NULL && k1 != NULL) {
+        *k0 = '\0';
+        *k1 = '\0';
+        
+        OBJECT_RA_H = atof(_RA);
+        float RAse = (strlen(k1 + 1) < 2) ? atof(k1 + 1) * 10 : atof(k1 + 1);
+        OBJECT_RA_M = atof(k0 + 1) + RAse / 60;
+        
+        char details[100];
+        snprintf(details, sizeof(details), "_RA:%s", _RA);
+        safeStringCopy(OBJECT_DETAILS, details, sizeof(OBJECT_DETAILS));
+        Serial3.print("1");
     }
-    int k1 = _DEC.indexOf(":");
-    OBJECT_DETAILS += ", _DEC:" + _DEC;
-    OBJECT_DEC_D = _DEC.substring(0, k0).toFloat();
-    float DECse = 0;
-    if (_DEC.substring(k1 + 1, _DEC.length()).length() < 2) {
-      DECse = _DEC.substring(k1 + 1, _DEC.length()).toFloat() * 10;
-    } else {
-      DECse = _DEC.substring(k1 + 1, _DEC.length()).toFloat();
-    }
-    OBJECT_DEC_M = _DEC.substring(k0 + 1, k1).toFloat() + DECse / 60;
-    if (OBJECT_DEC_D < 0) {
-      OBJECT_DEC_M *= -1;
-    }
-    Serial3.print("1");
-  }
-  // :MS#  -- Slew To Target RA and DEC
-  if (BT_COMMAND_STR == ":MS") {
-    // LX200 - Slew To (previously sent coordinates with Sr & Sd)
+}
 
-    // ora SlewTo the selected object and draw information on mainScreen
+// :Sd +18Я12:30#  - Set Target DEC
+if (strstr(BT_COMMAND_STR, "Sd") != NULL) {
+    char* sdPos = strstr(BT_COMMAND_STR, "Sd");
+    char _DEC[20];
+    strncpy(_DEC, sdPos + 2, strlen(BT_COMMAND_STR) - (sdPos - BT_COMMAND_STR) - 3);
+    _DEC[strlen(BT_COMMAND_STR) - (sdPos - BT_COMMAND_STR) - 3] = '\0';
+    
+    char* k0 = strchr(_DEC, (char)223); // Search character °
+    if (k0 == NULL) k0 = strchr(_DEC, '*');
+    
+    char* k1 = strchr(_DEC, ':');
+    
+    if (k0 != NULL && k1 != NULL) {
+        *k0 = '\0';
+        *k1 = '\0';
+        
+        OBJECT_DEC_D = atof(_DEC);
+        float DECse = (strlen(k1 + 1) < 2) ? atof(k1 + 1) * 10 : atof(k1 + 1);
+        OBJECT_DEC_M = atof(k0 + 1) + DECse / 60;
+        
+        if (OBJECT_DEC_D < 0) {
+            OBJECT_DEC_M *= -1;
+        }
+        
+        char details[200];
+        snprintf(details, sizeof(details), "%s, _DEC:%s", OBJECT_DETAILS, _DEC);
+        safeStringCopy(OBJECT_DETAILS, details, sizeof(OBJECT_DETAILS));
+        Serial3.print("1");
+    }
+}
+
+// :MS#  -- Slew To Target RA and DEC
+if (strcmp(BT_COMMAND_STR, ":MS") == 0) {
     calculateLST_HA();
     if (ALT > 0) {
-      Serial3.print("0");   // 0 means that everything is OK
-      if (IS_SOUND_ON) {
-        SoundOn(note_C, 32);
-        delay(200);
-        SoundOn(note_C, 32);
-        delay(200);
-        SoundOn(note_C, 32);
-        delay(1500);
-      }
-      UpdateObservedObjects();
-      OBJECT_NAME = "BT";
-      OBJECT_DESCR = "using LX200 Protocol";
-      OBJECT_DETAILS = "Missing information about the object! " + OBJECT_DETAILS;
-
-      // Stop Interrupt procedure for tracking.
-      Timer3.stop(); //
-      IS_TRACKING = false;
-      IS_OBJ_FOUND = false;
-      IS_OBJECT_RA_FOUND = false;
-      IS_OBJECT_DEC_FOUND = false;
-      Slew_timer = millis();
-      Slew_RA_timer = Slew_timer + 20000;   // Give 20 sec. advance to the DEC. We will revise later.
+        Serial3.print("0");
+        if (IS_SOUND_ON) {
+            SoundOn(note_C, 32);
+            delay(200);
+            SoundOn(note_C, 32);
+            delay(200);
+            SoundOn(note_C, 32);
+            delay(1500);
+        }
+        UpdateObservedObjects();
+        safeStringCopy(OBJECT_NAME, "BT", sizeof(OBJECT_NAME));
+        safeStringCopy(OBJECT_DESCR, "using LX200 Protocol", sizeof(OBJECT_DESCR));
+        
+        char details[500];
+        snprintf(details, sizeof(details), "Missing information about the object! %s", OBJECT_DETAILS);
+        safeStringCopy(OBJECT_DETAILS, details, sizeof(OBJECT_DETAILS));
+        
+        Timer3.stop();
+        IS_TRACKING = false;
+        IS_OBJ_FOUND = false;
+        IS_OBJECT_RA_FOUND = false;
+        IS_OBJECT_DEC_FOUND = false;
+        sendTrackingStatus();
+        Slew_timer = millis();
+        Slew_RA_timer = Slew_timer + 20000;
     } else {
-      Serial3.print("1rDUINO Scope: Object Below Horizon! #");
+        Serial3.print("rDUINOScope: Object Below Horizon! #");
     }
     drawMainScreen();
-    BT_COMMAND_STR = "";
-  }
-  if (BT_COMMAND_STR == "Current") {
+    BT_COMMAND_STR[0] = '\0';
+}
+
+if (strcmp(BT_COMMAND_STR, "Current") == 0) {
     Serial3.println("MECHANICS DATA (Software Defined):");
     Serial3.println("==================================");
     Serial3.print("Firmware Version: ");
-    Serial3.println(FirmwareName + " " + FirmwareNumber);
-
+    Serial3.print(FirmwareName);
+    Serial3.print(" ");
+    Serial3.println(FirmwareNumber);
     Serial3.print("WORM GEAR Tooths = ");
     Serial3.println(WORM);
     Serial3.print("REDUCTOR = 1:");
@@ -438,7 +505,6 @@ if (BT_COMMAND_STR == ":Me") {
     Serial3.println(DRIVE_STP);
     Serial3.print("MICROSteps Mode: ");
     Serial3.println(MICROSteps);
-
     Serial3.println("\r\nCALCULATED VALUES IN THE SOFTWARE:");
     Serial3.print("MicroSteps for 360 rotation = ");
     Serial3.println(MicroSteps_360);
@@ -476,10 +542,25 @@ if (BT_COMMAND_STR == ":Me") {
     Serial3.println(OBSERVATION_ALTITUDE, 6);
     Serial3.print("TIME ZONE: ");
     Serial3.println(TIME_ZONE);
+
+    // For the formatted date:
+    char dateBuffer[20];
+    const char* dateStr = rtc.getDateStr();
+    char monthBuffer[10];
+    safeStringCopy(monthBuffer, rtc.getMonthStr(FORMAT_SHORT), sizeof(monthBuffer));
+    
+    snprintf(dateBuffer, sizeof(dateBuffer), "%.2s %s %.2s", dateStr, monthBuffer, dateStr + 6);
     Serial3.print("Mount Date: ");
-    Serial3.println(String(rtc.getDateStr()).substring(0, 2) + " " + rtc.getMonthStr(FORMAT_SHORT) + " " + String(rtc.getDateStr()).substring(6));
+    Serial3.println(dateBuffer);
+    
+    // For hour :
+    char timeBuffer[6];
+    strncpy(timeBuffer, rtc.getTimeStr(), 5);
+    timeBuffer[5] = '\0';
     Serial3.print("Mount Time: ");
-    Serial3.println(String(rtc.getTimeStr()).substring(0, 5));
+    Serial3.println(timeBuffer);
+
+
     Serial3.print("Summer Time: ");
     Serial3.println(Summer_Time);
 
@@ -525,40 +606,44 @@ if (BT_COMMAND_STR == ":Me") {
     Serial3.print("CURRENT_SCREEN: ");
     Serial3.println(CURRENT_SCREEN);
     Serial3.println("==================================");
-    Serial3.println("Bluetooth Commands:");
-    Serial3.println(BTs);
 
-    BT_COMMAND_STR = "";
-  }
-  if (BT_COMMAND_STR.indexOf("SlewTo") > 0) {
-    // Serial.println("SlewTo Command");
-    int i1 = BT_COMMAND_STR.indexOf(';');
-    int i2 = BT_COMMAND_STR.indexOf(';', i1 + 1);
-    int i3 = BT_COMMAND_STR.indexOf(';', i2 + 1);
-    int i4 = BT_COMMAND_STR.indexOf(';', i3 + 1);
-    int i5 = BT_COMMAND_STR.indexOf(';', i4 + 1);
-    int i6 = BT_COMMAND_STR.indexOf(';', i5 + 1);
-    int i7 = BT_COMMAND_STR.indexOf(';', i6 + 1);
-    int i8 = BT_COMMAND_STR.indexOf(';', i7 + 1);
-    int i9 = BT_COMMAND_STR.indexOf(';', i8 + 1);
-    int i10 = BT_COMMAND_STR.indexOf(';', i9 + 1);
-    int i11 = BT_COMMAND_STR.indexOf(';', i10 + 1);
-    OBJECT_NAME = BT_COMMAND_STR.substring(i1 + 1, i2);
-    OBJECT_DESCR = "Pushed via BlueTooth";
-    OBJECT_DETAILS = "The " + OBJECT_NAME + " is a type " + BT_COMMAND_STR.substring(i10 + 1, i11) + " object in constelation " + BT_COMMAND_STR.substring(i9 + 1, i10);
-    OBJECT_DETAILS += ", with visible magnitude of " + BT_COMMAND_STR.substring(i7 + 1, i8) + " and size of " + BT_COMMAND_STR.substring(i6 + 1, i7) + "'. ";
-    OBJECT_DETAILS += OBJECT_NAME + " is " + BT_COMMAND_STR.substring(i8 + 1, i9) + "mil. l.y from Earth";
-    if (BT_COMMAND_STR.substring(i11 + 1, BT_COMMAND_STR.length()) != "0" && BT_COMMAND_STR.substring(i11 + 1, BT_COMMAND_STR.length()) != "") {
-      OBJECT_DETAILS += " and is a.k.a " + BT_COMMAND_STR.substring(i11 + 1, BT_COMMAND_STR.length()) + ".";
-    }
-    OBJECT_RA_H = BT_COMMAND_STR.substring(i2 + 1, i3).toFloat();
-    OBJECT_RA_M = BT_COMMAND_STR.substring(i3 + 1, i4).toFloat();
-    OBJECT_DEC_D = BT_COMMAND_STR.substring(i4 + 1, i5).toFloat();
-    OBJECT_DEC_M = BT_COMMAND_STR.substring(i5 + 1, i6).toFloat();
-    if (OBJECT_DEC_D  < 0) {
-      OBJECT_DEC_M *= -1;
-    }
+    BT_COMMAND_STR[0] = '\0';
+}
 
+if (strstr(BT_COMMAND_STR, "SlewTo") != NULL) {
+    char* tokens[12];
+    char* ptr = strtok(BT_COMMAND_STR, ";");
+    int tokenCount = 0;
+    
+    while (ptr != NULL && tokenCount < 12) {
+        tokens[tokenCount++] = ptr;
+        ptr = strtok(NULL, ";");
+    }
+    
+    if (tokenCount >= 12) {
+        safeStringCopy(OBJECT_NAME, tokens[1], sizeof(OBJECT_NAME));
+        safeStringCopy(OBJECT_DESCR, "Pushed via BlueTooth", sizeof(OBJECT_DESCR));
+        
+        char details[500];
+        snprintf(details, sizeof(details), 
+            "The %s is a type %s object in constellation %s, with visible magnitude of %s and size of %s'. %s is %smil. l.y from Earth",
+            tokens[1], tokens[11], tokens[10], tokens[8], tokens[7], tokens[1], tokens[9]);
+        
+        if (strcmp(tokens[12], "0") != 0 && strcmp(tokens[12], "") != 0) {
+            strcat(details, " and is a.k.a ");
+            strcat(details, tokens[12]);
+            strcat(details, ".");
+        }
+        safeStringCopy(OBJECT_DETAILS, details, sizeof(OBJECT_DETAILS));
+        
+        OBJECT_RA_H = atof(tokens[2]);
+        OBJECT_RA_M = atof(tokens[3]);
+        OBJECT_DEC_D = atof(tokens[4]);
+        OBJECT_DEC_M = atof(tokens[5]);
+        
+        if (OBJECT_DEC_D < 0) {
+            OBJECT_DEC_M *= -1;
+        }
 
     // ora SlewTo the selected object and draw information on mainScreen
     calculateLST_HA();
@@ -578,27 +663,39 @@ if (BT_COMMAND_STR == ":Me") {
       IS_OBJ_FOUND = false;
       IS_OBJECT_RA_FOUND = false;
       IS_OBJECT_DEC_FOUND = false;
+      sendTrackingStatus();
       Slew_timer = millis();
       Slew_RA_timer = Slew_timer + 20000;   // Give 20 sec. advance to the DEC. We will revise later.
     }
     drawMainScreen();
-    BT_COMMAND_STR = "";
+      BT_COMMAND_STR[0] = '\0';
   }
-  if (BT_COMMAND_STR == "Status") {
-    double st;
-    int st_h;
-    int st_m;
-    st = (String(rtc.getTimeStr()).substring(0, 2).toInt() * 60) + String(rtc.getTimeStr()).substring(3, 5).toInt();
-    st -= (START_TIME.substring(0, 2).toInt() * 60) + START_TIME.substring(3, 5).toInt();
-    if (st < 0) {
-      st += 1440;
-    }
-    st_h = int(st / 60);
-    st_m = ((st / 60) - st_h) * 60;
+}
 
-    // Draw initial screen - INITIALIZE
-    // The below part cannot be removed form the code
-    // You can add messages, but not remove!
+if (strcmp(BT_COMMAND_STR, "Status") == 0) {
+    // Calculation of elapsed time
+    char currentTime[10];
+    safeStringCopy(currentTime, rtc.getTimeStr(), sizeof(currentTime));
+    char startTime[10];
+    safeStringCopy(startTime, START_TIME, sizeof(startTime));
+    
+    // Extract hours and minutes
+    char* currPtr = strtok(currentTime, ":");
+    int currHours = atoi(currPtr);
+    int currMinutes = atoi(strtok(NULL, ":"));
+    
+    char* startPtr = strtok(startTime, ":");
+    int startHours = atoi(startPtr);
+    int startMinutes = atoi(strtok(NULL, ":"));
+    
+    int st = (currHours * 60 + currMinutes) - (startHours * 60 + startMinutes);
+    if (st < 0) {
+        st += 1440;
+    }
+    int st_h = st / 60;
+    int st_m = st % 60;
+
+    // Header
     Serial3.println("rDUINO SCOPE - TELESCOPE GOTO System");
     Serial3.println("Copyright (C) 2016 Dessislav Gouzgounov");
     Serial3.println("Download for free @ http://rduinoscope.byethost24.com\r\n");
@@ -612,7 +709,7 @@ if (BT_COMMAND_STR == ":Me") {
     Serial3.println("===============================================");
     Serial3.println("Location Information:");
     Serial3.print("      LATITUDE: ");
-    Serial3.println(OBSERVATION_LATTITUDE, 4); // JG correction was inverted
+    Serial3.println(OBSERVATION_LATTITUDE, 4);
     Serial3.print("      LONGITUDE: ");
     Serial3.println(OBSERVATION_LONGITUDE, 4);
     Serial3.print("      ALTITUDE: ");
@@ -634,34 +731,52 @@ if (BT_COMMAND_STR == ":Me") {
     Serial3.print(Observed_Obj_Count);
     Serial3.println(" object(s):");
     Serial3.println("");
+    
     for (int i = 0; i < Observed_Obj_Count; i++) {
-      int i1 = ObservedObjects[i].indexOf(';');
-      int i2 = ObservedObjects[i].indexOf(';', i1 + 1);
-      int i3 = ObservedObjects[i].indexOf(';', i2 + 1);
-      int i4 = ObservedObjects[i].indexOf(';', i3 + 1);
-      int i5 = ObservedObjects[i].indexOf(';', i4 + 1);
-      int i6 = ObservedObjects[i].indexOf(';', i5 + 1);
-      int i7 = ObservedObjects[i].indexOf(';', i6 + 1);
-      int tt;
-      String ha_;
-      String degs_;
-      if (i == (Observed_Obj_Count - 1)) {
-        tt = (((String(rtc.getTimeStr()).substring(0, 2).toInt()) * 60)  + (String(rtc.getTimeStr()).substring(3, 5).toInt())) - ((ObservedObjects[i].substring(i2 + 1, i2 + 3).toInt() * 60) + ObservedObjects[i].substring(i2 + 4, i3).toInt());
-        if (tt < 0) {
-          tt += 1440;
+        // Parse each input with strtok
+        char entry[300];
+        safeStringCopy(entry, ObservedObjects[i], sizeof(entry));
+        
+        char* tokens[8];
+        char* ptr = strtok(entry, ";");
+        int tokenCount = 0;
+        
+        while (ptr != NULL && tokenCount < 8) {
+            tokens[tokenCount++] = ptr;
+            ptr = strtok(NULL, ";");
         }
-      } else {
-        tt = ObservedObjects[i].substring(i7 + 1, ObservedObjects[i].length()).toInt();
-      }
-      degs_ = ObservedObjects[i].substring(i6 + 1, i7);
-      ha_ = ObservedObjects[i].substring(i5 + 1, i6);
-      String Composed = "@ " + ObservedObjects[i].substring(i2 + 1, i3) + "h, " + ObservedObjects[i].substring(0, i1) + " was observed for " + String(tt) + " min";
-      Composed += "\nAt the time of observation the object was " + degs_ + "deg. above horizon, with HA:" + ha_ + " Environment wise: " + ObservedObjects[i].substring(i3 + 1, i4) + " C and " + ObservedObjects[i].substring(i4 + 1, i5) + "% humidity. " + ObservedObjects[i].substring(i1 + 1, i2) + "\n";
-      Serial3.println(Composed);
-      BT_COMMAND_STR = "";
-    }
-  }
-  // }
-  BT_COMMAND_STR = "";
-  Serial3.flush();
+        
+        if (tokenCount >= 7) {
+            int tt;
+            if (i == (Observed_Obj_Count - 1)) {
+                // compute for last object
+                char objTime[6];
+                safeStringCopy(objTime, tokens[2], sizeof(objTime));
+                char* timePtr = strtok(objTime, ":");
+                int objHours = atoi(timePtr);
+                int objMinutes = atoi(strtok(NULL, ":"));
+                
+                tt = (currHours * 60 + currMinutes) - (objHours * 60 + objMinutes);
+                if (tt < 0) tt += 1440;
+            } else {
+                tt = atoi(tokens[7]);
+            }
+            
+            // Build report
+            char composed[500];
+            snprintf(composed, sizeof(composed), 
+                "@ %sh, %s was observed for %d min\n"
+                "At the time of observation the object was %sdeg. above horizon, with HA:%s "
+                "Environment wise: %s C and %s%% humidity. %s\n",
+                tokens[2], tokens[0], tt, tokens[6], tokens[5], 
+                tokens[3], tokens[4], tokens[1]);
+            
+            Serial3.println(composed);
+        }
+    BT_COMMAND_STR[0] = '\0';
+}
+}
+
+BT_COMMAND_STR[0] = '\0';
+Serial3.flush();
 }

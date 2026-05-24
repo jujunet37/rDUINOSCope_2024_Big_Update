@@ -56,7 +56,7 @@ void considerTempUpdates() // Temperature && Humidity Updates && battery voltage
       tft.print((237.7*(log(_humid/100)+(17.27*_temp)/(237.7+_temp)))/(17.27-(log((_humid/100))+(17.27*_temp)/(237.7+_temp))), 1);
 
 // End add JG Julien modif Add Dew point  
-    
+
     }
     Tupdate_time = millis();
 
@@ -88,8 +88,8 @@ void considerTimeUpdates()
   }
   if (CURRENT_SCREEN == 4 && (millis() - update_time) > 10000)
   {
-
-    if (old_d != rtc.getDateStr(FORMAT_LONG, FORMAT_LITTLEENDIAN, '/'))
+    //if (old_d != rtc.getDateStr(FORMAT_LONG, FORMAT_LITTLEENDIAN, '/'))
+    if (strcmp(old_d, rtc.getDateStr(FORMAT_LONG, FORMAT_LITTLEENDIAN, '/')) != 0)
     {
       if (!IS_NIGHTMODE) {
         drawBin("UI/day/status_bar_new.bin", 0, 89, 320, 27); // Drawing selected Object Tumbnail 140*140 Pixels
@@ -159,7 +159,7 @@ void considerTimeUpdates()
     {
       tft.print((LST - (int)LST) * 60, 0);
     }
-    if ((OBJECT_NAME != "") && (OBJECT_NAME != "CP") && (IS_BT_MODE_ON == false))
+    if ((OBJECT_NAME[0] != '\0') && (strcmp(OBJECT_NAME, "CP") != 0) && (IS_BT_MODE_ON == false))
     {
       /*
         if (TRACKING_MOON)
@@ -242,7 +242,8 @@ void considerTimeUpdates()
     tft.fillRect(190, 62, 75, 25, l_text ); //
     tft.cursorToXY(195, 68);
     tft.print(rtc.getTimeStr(FORMAT_SHORT));
-    if (old_d != rtc.getDateStr(FORMAT_LONG, FORMAT_LITTLEENDIAN, '/')) {
+    //if (old_d != rtc.getDateStr(FORMAT_LONG, FORMAT_LITTLEENDIAN, '/')) {
+    if (strcmp(old_d, rtc.getDateStr(FORMAT_LONG, FORMAT_LITTLEENDIAN, '/')) != 0) {
 
       tft.fillRect(50, 62, 130, 25, l_text); //l_text
       tft.cursorToXY(55, 68);
@@ -366,7 +367,6 @@ void considerTimeUpdates()
 
     if (ALLIGN_STEP == 1)
     {
-      //tft.fillRect(0, 295, 320, 80, BLACK);
       tft.setFontMode(gTextFontModeSolid);// Set font mode to Solid (with Highlight)
       tft.setTextColor(title_bg, BLACK);
       tft.cursorToXY(0, 280);
