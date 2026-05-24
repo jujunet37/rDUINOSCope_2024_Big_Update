@@ -33,6 +33,7 @@ Be specific when searching. Engine look in the first catalog, stop when found 50
 
 
 * Complete server ASCOM driver, for multiple connections with several app at the same time (Cartes du Ciel, PHD2, N.I.N.A)
+* Joystick acceleration for smoothness
 
 
 
