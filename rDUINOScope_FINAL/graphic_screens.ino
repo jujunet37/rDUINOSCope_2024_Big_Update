@@ -61,6 +61,7 @@ void drawGPSScreen()
   tft.setTextScale(3);
   tft.setTextColor(title_texts);
   tft.cursorToXY(15, 5);
+  //tft.setTextColor(title_texts);
   tft.print("Reading GPS Data");
 
   if (IS_NIGHTMODE) {
@@ -77,7 +78,6 @@ void drawGPSScreen()
 }
 
 ///////////////////////////////////////////////////// Clock Screen Graphics ///////////////////////////////////////////////////////
-
 void drawClockScreen()
 {
   CURRENT_SCREEN = 1;
@@ -87,44 +87,43 @@ void drawClockScreen()
   tft.setTextScale(3);
   tft.print("Date & Time");
 
-  char OBJ_NAME[50];
-  char OBJ_NAME_1[50];
-  
-// Determine the file paths
+  char obj_name[50];
+  String OBJ_NAME = "";
+  String OBJ_NAME_1 = "";
   if (!IS_NIGHTMODE) {
-    safeStringCopy(OBJ_NAME, "UI/day/bg_time_1.bin", sizeof(OBJ_NAME));
+    OBJ_NAME = "UI/day/bg_time_1.bin";
     if (Summer_Time == 0) {
-      safeStringCopy(OBJ_NAME_1, "UI/day/bg_time_2_off.bin", sizeof(OBJ_NAME_1));
+      OBJ_NAME_1 = "UI/day/bg_time_2_off.bin";
     } else {
-      safeStringCopy(OBJ_NAME_1, "UI/day/bg_time_2_on.bin", sizeof(OBJ_NAME_1));
+      OBJ_NAME_1 = "UI/day/bg_time_2_on.bin";
     }
   } else {
-    safeStringCopy(OBJ_NAME, "UI/night/bg_time_1.bin", sizeof(OBJ_NAME));
+    OBJ_NAME = "UI/night/bg_time_1.bin";
     if (Summer_Time == 0) {
-      safeStringCopy(OBJ_NAME_1, "UI/night/bg_time_2_off.bin", sizeof(OBJ_NAME_1));
+      OBJ_NAME_1 = "UI/night/bg_time_2_off.bin";
     } else {
-      safeStringCopy(OBJ_NAME_1, "UI/night/bg_time_2_on.bin", sizeof(OBJ_NAME_1));
+      OBJ_NAME_1 = "UI/night/bg_time_2_on.bin";
     }
   }
-  
-// Open and draw files directly with existing buffers
   if (SD.open(OBJ_NAME)) {
-    drawBin(OBJ_NAME, 0, 30, 320, 450);
+    OBJ_NAME.toCharArray(obj_name, 50);
+    drawBin(obj_name, 0, 30, 320, 450); // Drawing selected Object Tumbnail 140*140 Pixels
   }
   if (SD.open(OBJ_NAME_1)) {
-    drawBin(OBJ_NAME_1, 0, 415, 320, 65);
+    OBJ_NAME_1.toCharArray(obj_name, 50);
+    drawBin(obj_name, 0, 415, 320, 65); // Drawing selected Object Tumbnail 140*140 Pixels
   }
 
-  tft.drawRect(15, 224, 80, 50, messie_btn);
-  tft.drawRect(120, 224, 80, 50, messie_btn);
-  tft.drawRect(230, 224, 80, 50, messie_btn);
-  tft.drawRect(15, 285, 80, 50, messie_btn);
-  tft.drawRect(120, 285, 80, 50, messie_btn);
-  tft.drawRect(230, 285, 80, 50, messie_btn);
-  tft.drawRect(15, 346, 80, 50, messie_btn);
-  tft.drawRect(120, 346, 80, 50, messie_btn);
-  tft.drawRect(230, 346, 80, 50, messie_btn);
-  tft.drawRect(120, 408, 80, 50, messie_btn);
+  tft.drawRect(15, 224, 80, 50, messie_btn); //1 x 15>95   y 224>274
+  tft.drawRect(120, 224, 80, 50, messie_btn);//2 x 120>200 y 224>274
+  tft.drawRect(230, 224, 80, 50, messie_btn);//3 x 230>280 y 224>274
+  tft.drawRect(15, 285, 80, 50, messie_btn); //4 x 15>95   y 285> 335
+  tft.drawRect(120, 285, 80, 50, messie_btn);//5 x 120>200 y 285>335
+  tft.drawRect(230, 285, 80, 50, messie_btn);//6 x 230>280 y 285>335
+  tft.drawRect(15, 346, 80, 50, messie_btn); //7 x 15>95   y 346>396
+  tft.drawRect(120, 346, 80, 50, messie_btn);//8 x 120>200 y 346>396
+  tft.drawRect(230, 346, 80, 50, messie_btn);//9 x 230>280 y 346>396
+  tft.drawRect(120, 408, 80, 50, messie_btn);//0 x 120>200 y 408>478
 
   tft.setTextScale(2);
   tft.setTextColor(title_texts);
@@ -134,9 +133,7 @@ void drawClockScreen()
   tft.print(rtc.getTimeStr(FORMAT_SHORT));
 }
 
-
 ///////////////////////////////////////////////////// Select Alignment Screen Graphics ///////////////////////////////////////////////////////
-
 void drawSelectAlignment() {
   CURRENT_SCREEN = 3;
   tft.fillRect(0, 0, 320, 30, title_bg); // yellow Rectangle  Was (1, 1, 239, 35, title_bg);
@@ -145,35 +142,32 @@ void drawSelectAlignment() {
   tft.setTextScale(3);
   tft.print("ALIGNMENT");
 
-  char OBJ_NAME[50];
-  
-// Determine the file path directly in the buffer
+  char obj_name[50];
+  String OBJ_NAME = "";
   if (!IS_NIGHTMODE) {
     if (OBSERVATION_LONGITUDE > 0) {
-      safeStringCopy(OBJ_NAME, "UI/day/bg_allign_2.bin", sizeof(OBJ_NAME));
+      OBJ_NAME = "UI/day/bg_allign_2.bin";
     } else {
-      safeStringCopy(OBJ_NAME, "UI/day/bg_allign_1.bin", sizeof(OBJ_NAME));
+      OBJ_NAME = "UI/day/bg_allign_1.bin";
     }
   } else {
     if (OBSERVATION_LONGITUDE > 0) {
-      safeStringCopy(OBJ_NAME, "UI/night/bg_allign_2.bin", sizeof(OBJ_NAME));
+      OBJ_NAME = "UI/night/bg_allign_2.bin";
     } else {
-      safeStringCopy(OBJ_NAME, "UI/night/bg_allign_1.bin", sizeof(OBJ_NAME));
+      OBJ_NAME = "UI/night/bg_allign_1.bin";
     }
   }
-  
-// Open and draw directly with the OBJ_NAME buffer
-  if (SD.open(OBJ_NAME)) {
-    drawBin(OBJ_NAME, 0, 30, 320, 450); // Drawing selected Object Tumbnail 140*140 Pixels
+  if (SD.open(OBJ_NAME))
+  {
+    OBJ_NAME.toCharArray(obj_name, 50);
+    drawBin(obj_name, 0, 30, 320, 450); // Drawing selected Object Tumbnail 140*140 Pixels
   }
-  
   tft.setTextColor(title_texts);
   tft.cursorToXY(100, 430);
   tft.println("CONTINUE");
 }
 
 ///////////////////////////////////////////////////// Main Screen Graphics ///////////////////////////////////////////////////////
-
 void drawMainScreen()
 {
   tft.setTextScale(1);
@@ -185,39 +179,34 @@ void drawMainScreen()
   update_time = millis();
 
   char obj_name[50];
-  char OBJ_NAME[100];
-  char OBJ_NAME_1[50];
-  char OBJ_NAME_2[50];
-  
+  String OBJ_NAME = "objects/";
+  String OBJ_NAME_1 = "UI/";
+  String OBJ_NAME_2 = "UI/";
   if (IS_NIGHTMODE == true) {
-    safeStringCopy(OBJ_NAME, "objects/night/", sizeof(OBJ_NAME));
-    safeStringCopy(OBJ_NAME_1, "UI/night/status_bar_back.bin", sizeof(OBJ_NAME_1));
-    safeStringCopy(OBJ_NAME_2, "UI/night/menu_background.bin", sizeof(OBJ_NAME_2));
+    OBJ_NAME += "night/";
+    OBJ_NAME_1 += "night/status_bar_back.bin";
+    OBJ_NAME_2 += "night/menu_background.bin";
   } else {
-    safeStringCopy(OBJ_NAME, "objects/day/", sizeof(OBJ_NAME));
-    safeStringCopy(OBJ_NAME_1, "UI/day/status_bar_back.bin", sizeof(OBJ_NAME_1));
-    safeStringCopy(OBJ_NAME_2, "UI/day/menu_background.bin", sizeof(OBJ_NAME_2));
+    OBJ_NAME += "day/";
+    OBJ_NAME_1 += "day/status_bar_back.bin";
+    OBJ_NAME_2 += "day/menu_background.bin";
   }
 
   if (SD.open(OBJ_NAME_1))
   {
-    drawBin(OBJ_NAME_1, 0, 89, 320, 27);
-    tft.drawLine(0, 90, 320, 90, BLACK); // Time_area_back
+    OBJ_NAME_1.toCharArray(obj_name, 50);
+    drawBin(obj_name, 0, 89, 320, 27); // Drawing selected Object Tumbnail 140*140 Pixels
+    tft.drawLine(0, 90, 320, 90, BLACK );//Time_area_back
   }
 
-  tft.fillRect(0, 27, 320, 63, Time_area_back); // ILI9341_INDIGO // title_bg / ILI9341_SLATEBLUE /ILI9341_DARKBLUE/ ILI9341_DODGERBLUE
+  tft.fillRect(0, 27, 320, 63, Time_area_back );//ILI9341_INDIGO // title_bg / ILI9341_SLATEBLUE /ILI9341_DARKBLUE/ ILI9341_DODGERBLUE
   drawStatusBar();
   tft.setTextColor(Time_area_font); // title_texts // ILI9341_INDIGO ILI9341_DARKBLUE
   tft.cursorToXY(1, 35);
   tft.setTextScale(3);
   tft.print("TIME:");
   tft.cursorToXY(88, 35);
-  
-  char timeStr[20];
-  const char* fullTime = rtc.getTimeStr();
-  strncpy(timeStr, fullTime, 5);
-  timeStr[5] = '\0';
-  tft.print(timeStr);
+  tft.print(String(rtc.getTimeStr()).substring(0, 5));
 
   tft.cursorToXY(7, 65);
   tft.print("LST");
@@ -245,7 +234,9 @@ void drawMainScreen()
     tft.print((LST - (int)LST) * 60, 0);
   }
 
-  // Julien Modif add Dew Point
+
+// Julien Modif add Dew Point
+
   tft.setTextScale(2);
   tft.setTextColor(Time_area_font);
   tft.cursorToXY(201, 30);
@@ -277,31 +268,24 @@ void drawMainScreen()
   tft.print("o");
   tft.cursorToXY(300, 72);
   tft.print("o");
-  // Julien Modif add Dew Point
+
+// Julien Modif add Dew Point
+
+
+
 
   tft.setTextScale(1);
-  tft.setTextColor(l_text);
+  tft.setTextColor(l_text );
   tft.cursorToXY(1, 100);
   tft.print("Date:");
 
   tft.setTextColor(btn_l_border);
   tft.cursorToXY(35, 100);
-  
-  char dateStr[20];
-  const char* fullDate = rtc.getDateStr();
-  // Extract day (2 first types)
-  strncpy(dateStr, fullDate, 2);
-  dateStr[2] = '\0';
-  tft.print(dateStr);
+  tft.print(String(rtc.getDateStr()).substring(0, 2));
   tft.print(" ");
   tft.print(rtc.getMonthStr(FORMAT_SHORT));
   tft.print(" ");
-  // Extract year (last 4 characters)
-  int dateLen = strlen(fullDate);
-  if (dateLen >= 4) {
-    tft.print(fullDate + dateLen - 4);
-  }
-  
+  tft.print(String(rtc.getDateStr()).substring(6));
   tft.cursorToXY(110, 100);
   tft.print("@");
   tft.setTextColor(l_text);
@@ -313,7 +297,7 @@ void drawMainScreen()
   tft.print(" LONG:");
   tft.setTextColor(btn_l_border);
   tft.print(OBSERVATION_LONGITUDE, 4);
-  tft.setTextColor(l_text);
+  tft.setTextColor(l_text );
   tft.print(" ALT:");
   tft.setTextColor(btn_l_border);
   tft.print(OBSERVATION_ALTITUDE, 0);
@@ -321,7 +305,7 @@ void drawMainScreen()
   tft.setTextScale(3);
   tft.setTextColor(l_text);
   tft.cursorToXY(1, 119);
-  if (strlen(OBJECT_NAME) > 7) {
+  if (OBJECT_NAME.length() > 7) {
     tft.setTextScale(2);
     tft.cursorToXY(1, 129);
     tft.print("OBS:");
@@ -331,11 +315,11 @@ void drawMainScreen()
   }
 
   // Data for the observed object....
-  if (strlen(OBJECT_NAME) > 0) {
+  if (OBJECT_NAME != "") {
     tft.setTextColor(title_bg);
     tft.print(OBJECT_NAME);
 
-    if ((strlen(OBJECT_NAME) > 0) && (ALT < 0)) {
+    if ((OBJECT_NAME != "") && (ALT < 0)) {
       tft.setTextScale(2);
       tft.cursorToXY(0, 290);
       tft.setTextColor(RED);
@@ -347,25 +331,22 @@ void drawMainScreen()
     }
     else
     {
-      // ASCOM part
-      if ((ascomConnected) && (slewascomsent)) {
-        if (IS_NIGHTMODE) {
-            safeStringCopy(obj_name, "objects/night/ASCOM.bin", sizeof(obj_name));
-        } else {
-            safeStringCopy(obj_name, "objects/day/ASCOM.bin", sizeof(obj_name));
-        }
-        drawBin(obj_name, 0, 143, 320, 142);
-      } else {
-        // build path
-        snprintf(obj_name, sizeof(obj_name), "%s%s.bin", OBJ_NAME, OBJECT_NAME);
-        if (SD.open(obj_name)) {
-          drawBin(obj_name, 0, 143, 320, 142);
-        }
+      OBJ_NAME += String(OBJECT_NAME) + ".bin";
+#ifdef serial_debug
+      Serial.print("file name: ");
+      Serial.println(OBJ_NAME);
+      Serial.print("SD.open(OBJ_NAME) = ");
+      Serial.println(SD.open(OBJ_NAME));
+#endif
+      if (SD.open(OBJ_NAME))
+      {
+        OBJ_NAME.toCharArray(obj_name, 50);
+        drawBin(obj_name, 0, 143, 320, 142); // Drawing selected Object Tumbnail 320*133 Pixels // Make it 145
       }
-
       if (SD.open(OBJ_NAME_2) /*&& (IS_TRACKING)*/)
       {
-        drawBin(OBJ_NAME_2, 0, 286, 320, 194);
+        OBJ_NAME_2.toCharArray(obj_name, 50);
+        drawBin(obj_name, 0, 286, 320, 194); // Drawing Object Details Background Image
         tft.cursorToXY(0, 295);
         tft.setTextColor(l_text);
         tft.setTextScale(1);
@@ -401,7 +382,7 @@ void drawMainScreen()
     tft.print(abs(OBJECT_DEC_M), 2);
     tft.println("'");
 
-  if ((strcmp(OBJECT_NAME, "CP") != 0) && (IS_BT_MODE_ON == false)) {
+    if ((OBJECT_NAME != "CP") && (IS_BT_MODE_ON == false)) {
       tft.setTextColor(l_text);
       tft.cursorToXY(0, 215);
       tft.println("HA :");
@@ -432,20 +413,11 @@ void drawMainScreen()
 #ifdef use_battery_level
   drawBatteryLevel(260, 335, calculateBatteryLevel());
 #endif
-  // Draw Main Screen Menu:
+  //  Draw Main Screen Menu:
   drawMainScreen_Menu(0);
-
-  if (ascomConnected == true) {
-    tft.cursorToXY(15, 340);
-    tft.setTextScale(3);
-    tft.setTextColor(GREEN);
-    tft.print("ASCOM REMOTE");
-  }
 }
 
-
 ///////////////////////////////////////////////////// Coordintaes Screen Graphics ///////////////////////////////////////////////////////
-
 void drawCoordinatesScreen() {
   CURRENT_SCREEN = 5;
   tft.fillRect(0, 0, 320, 30, title_bg); // yellow Rectangle  Was (1, 1, 239, 35, title_bg);
@@ -454,99 +426,142 @@ void drawCoordinatesScreen() {
   tft.cursorToXY(5, 5);
   tft.print("Coordinates");
 
-  char OBJ_NAME[50];
-  char OBJ_NAME_3[50];
-  
-  // path
+  char obj_name[50];
+  String OBJ_NAME = "";
+  String OBJ_NAME_3 = "";
   if (!IS_NIGHTMODE) {
-    safeStringCopy(OBJ_NAME, "UI/day/bg_coord.bin", sizeof(OBJ_NAME));
-    safeStringCopy(OBJ_NAME_3, "UI/day/btn_back.bin", sizeof(OBJ_NAME_3));
+    OBJ_NAME = "UI/day/bg_coord.bin";
+    OBJ_NAME_3 = "UI/day/btn_back.bin";
   } else {
-    safeStringCopy(OBJ_NAME, "UI/night/bg_coord.bin", sizeof(OBJ_NAME));
-    safeStringCopy(OBJ_NAME_3, "UI/night/btn_back.bin", sizeof(OBJ_NAME_3));
+    OBJ_NAME = "UI/night/bg_coord.bin";
+    OBJ_NAME_3 = "UI/night/btn_back.bin";
   }
 
   if (SD.open(OBJ_NAME_3)/* && (IS_TRACKING)*/)
   {
-    drawBin(OBJ_NAME_3, 245, 0, 75, 30);
+    OBJ_NAME_3.toCharArray(obj_name, 50);
+    drawBin(obj_name, 245, 0, 75, 30); // Drawing selected Object Tumbnail 140*140 Pixels
   }
 
   if (SD.open(OBJ_NAME)/* && (IS_TRACKING)*/)
   {
-    drawBin(OBJ_NAME, 0, 30, 320, 450);
+    OBJ_NAME.toCharArray(obj_name, 50);
+    drawBin(obj_name, 0, 30, 320, 450); // Drawing selected Object Tumbnail 140*140 Pixels
   }
 }
 
-
 ///////////////////////////////////////////////////// Load Screen Graphics ///////////////////////////////////////////////////////
-
 void drawLoadScreen() {
   CURRENT_SCREEN = 6;
+  //  MESS_PAGER = 0;
   char obj_name[50];
-  char OBJ_NAME[50];
-  char OBJ_NAME_2[50];
-  char OBJ_NAME_3[50];
-  char OBJ_NAME_4[50];
-  
+  String OBJ_NAME = "";
+  String OBJ_NAME_2 = "";
+  String OBJ_NAME_3 = "";
+  String OBJ_NAME_4 = "";
   if (!IS_NIGHTMODE) {
-    safeStringCopy(OBJ_NAME, "UI/day/", sizeof(OBJ_NAME));
-    safeStringCopy(OBJ_NAME_2, "UI/day/btn_next_prev.bin", sizeof(OBJ_NAME_2));
-    safeStringCopy(OBJ_NAME_3, "UI/day/btn_back.bin", sizeof(OBJ_NAME_3));
-    safeStringCopy(OBJ_NAME_4, "UI/day/load_background.bin", sizeof(OBJ_NAME_4));
+    OBJ_NAME = "UI/day/";
+    OBJ_NAME_2 = "UI/day/btn_next_prev.bin";
+    OBJ_NAME_3 = "UI/day/btn_back.bin";
+    OBJ_NAME_4 = "UI/day/load_background.bin";
   } else {
-    safeStringCopy(OBJ_NAME, "UI/night/", sizeof(OBJ_NAME));
-    safeStringCopy(OBJ_NAME_2, "UI/night/btn_next_prev.bin", sizeof(OBJ_NAME_2));
-    safeStringCopy(OBJ_NAME_3, "UI/night/btn_back.bin", sizeof(OBJ_NAME_3));
-    safeStringCopy(OBJ_NAME_4, "UI/night/load_background.bin", sizeof(OBJ_NAME_4));
+    OBJ_NAME = "UI/night/";
+    OBJ_NAME_2 = "UI/night/btn_next_prev.bin";
+    OBJ_NAME_3 = "UI/night/btn_back.bin";
+    OBJ_NAME_4 = "UI/night/load_background.bin";
   }
-  
   tft.fillScreen(BLACK);
-  tft.fillRect(0, 0, 400, 30, title_bg);
+  tft.fillRect(0, 0, 400, 30, title_bg); // yellow Rectangle  Was (1, 1, 239, 35, title_bg);
+  // tft.setTextColor(title_texts);
+  // tft.setTextScale(3); Altered by JG (replaced by prev and next page)
+  // tft.cursorToXY(5, 5); Altered by JG (replaced by prev and next page)
+  // tft.print("Load..."); Altered by JG (replaced by prev and next page)
 
   // Add JG
   if (!IS_NIGHTMODE) {
-    drawBin("UI/day/btn_prev.bin", 0, 0, 75, 30);
-    drawBin("UI/day/btn_next.bin", 122, 0, 75, 30);
-  } else {
-    drawBin("UI/night/btn_prev.bin", 0, 0, 75, 30);
-    drawBin("UI/night/btn_next.bin", 122, 0, 75, 30);
-  }
+  drawBin("UI/day/btn_prev.bin", 0, 0, 75, 30); // Draw prev cat Button Thumbnail
+  drawBin("UI/day/btn_next.bin", 122, 0, 75, 30); // Draw next cat Button Thumbnail
+   } else {
+  drawBin("UI/night/btn_prev.bin", 0, 0, 75, 30); // Draw prev cat Button Thumbnail
+  drawBin("UI/night/btn_next.bin", 122, 0, 75, 30); // Draw next cat Button Thumbnail 
+   }
   // End add JG
   
-  if (SD.open(OBJ_NAME_4)) {
-    drawBin(OBJ_NAME_4, 0, 30, 320, 450);
+  if (SD.open(OBJ_NAME_4))
+  {
+    OBJ_NAME_4.toCharArray(obj_name, 50);
+    drawBin(obj_name, 0, 30, 320, 450); // Draw Back Button Thumbnail
   }
 
-  // build path load button
-  char load_button_path[50];
-  safeStringCopy(load_button_path, OBJ_NAME, sizeof(load_button_path));
-  
-  // add file name in LOAD_SELECTOR
-  const char* button_files[] = {
-    "btn_load_0.bin", "btn_load_1.bin", "btn_load_2.bin", "btn_load_3.bin", "btn_load_4.bin",
-    "btn_load_0b.bin", "btn_load_1b.bin", "btn_load_2b.bin", "btn_load_3b.bin", "btn_load_4b.bin",
-    "btn_load_0c.bin", "btn_load_1c.bin", "btn_load_2c.bin", "btn_load_3c.bin", "btn_load_4c.bin"
-  };
-  
-  if (LOAD_SELECTOR >= 0 && LOAD_SELECTOR < 15) {
-    strncat(load_button_path, button_files[LOAD_SELECTOR], 
-            sizeof(load_button_path) - strlen(load_button_path) - 1);
+  // Draw buttons to load CSVs
+  if (LOAD_SELECTOR == 0) {
+    OBJ_NAME += "btn_load_0.bin";
+  }
+  if (LOAD_SELECTOR == 1) {
+    OBJ_NAME += "btn_load_1.bin";
+  }
+  if (LOAD_SELECTOR == 2) {
+    OBJ_NAME += "btn_load_2.bin";
+  }
+  if (LOAD_SELECTOR == 3) {
+    OBJ_NAME += "btn_load_3.bin";
+  }
+  if (LOAD_SELECTOR == 4) {
+    OBJ_NAME += "btn_load_4.bin";
+  }
+// Add JG
+
+if (LOAD_SELECTOR == 5) {
+    OBJ_NAME += "btn_load_0b.bin";
+  }
+if (LOAD_SELECTOR == 6) {
+   OBJ_NAME += "btn_load_1b.bin";
+  }
+if (LOAD_SELECTOR == 7) {
+    OBJ_NAME += "btn_load_2b.bin";
+  }
+if (LOAD_SELECTOR == 8) {
+    OBJ_NAME += "btn_load_3b.bin";
+  }
+if (LOAD_SELECTOR == 9) {
+    OBJ_NAME += "btn_load_4b.bin";
+  }
+if (LOAD_SELECTOR == 10) {
+    OBJ_NAME += "btn_load_0c.bin";
+  }
+if (LOAD_SELECTOR == 11) {
+   OBJ_NAME += "btn_load_1c.bin";
+  }
+if (LOAD_SELECTOR == 12) {
+    OBJ_NAME += "btn_load_2c.bin";
+  }
+if (LOAD_SELECTOR == 13) {
+    OBJ_NAME += "btn_load_3c.bin";
+  }
+if (LOAD_SELECTOR == 14) {
+    OBJ_NAME += "btn_load_4c.bin";
+  }
+// End add JG
+
+  if (SD.open(OBJ_NAME_3))
+  {
+    OBJ_NAME_3.toCharArray(obj_name, 50);
+    drawBin(obj_name, 245, 0, 75, 30); // Draw Back Button Thumbnail
   }
 
-  if (SD.open(OBJ_NAME_3)) {
-    drawBin(OBJ_NAME_3, 245, 0, 75, 30);
+  if (SD.open(OBJ_NAME))
+  {
+    OBJ_NAME.toCharArray(obj_name, 50);
+    drawBin(obj_name, 0, 60, 320, 80); // Draw Selection Button Thumbnail
   }
 
-  if (SD.open(load_button_path)) {
-    drawBin(load_button_path, 0, 60, 320, 80);
+  if (SD.open(OBJ_NAME_2))
+  {
+    OBJ_NAME_2.toCharArray(obj_name, 50);
+    drawBin(obj_name, 0, 434, 320, 46); // Draw Next/Prev Button Thumbnail
   }
-
-  if (SD.open(OBJ_NAME_2)) {
-    drawBin(OBJ_NAME_2, 0, 434, 320, 46);
-  }
-  
   drawLoadObjects();
-}                                                                                                                            
+}
 
 ///////////////////////////////////////////////////// Options Screen Graphics ///////////////////////////////////////////////////////
 void drawOptionsScreen()
@@ -573,6 +588,9 @@ void drawOptionsScreen()
   updateMeridianFlip_opt();
   updateSound_opt();
   updateStepper_opt();
+  
+  //updateFocus_stepper_opt();
+  
 }
 
 ///////////////////////////////////////////////////// STAT Screen Graphics ///////////////////////////////////////////////////////
@@ -636,22 +654,8 @@ void drawSTATScreen() {
   double st;
   int st_h;
   int st_m;
-
-char currentTime[10], startTime[10];
-safeStringCopy(currentTime, rtc.getTimeStr(), sizeof(currentTime));
-safeStringCopy(startTime, START_TIME, sizeof(startTime));
-
-char* currPtr = strtok(currentTime, ":");
-char* startPtr = strtok(startTime, ":");
-
-int currMin = (atoi(currPtr) * 60) + atoi(strtok(NULL, ":"));
-int startMin = (atoi(startPtr) * 60) + atoi(strtok(NULL, ":"));
-
-st = currMin - startMin;
-if (st < 0) {
-    st += 1440;
-}
-
+  st = (String(rtc.getTimeStr()).substring(0, 2).toInt() * 60) + String(rtc.getTimeStr()).substring(3, 5).toInt();
+  st -= (START_TIME.substring(0, 2).toInt() * 60) + START_TIME.substring(3, 5).toInt();
   if (st < 0) {
     st += 1440;
   }
@@ -682,42 +686,31 @@ if (st < 0) {
   tft.println(" object(s) observed:");
   tft.setTextColor(btn_l_border);
   tft.println("");
-
-for (int i = 0; i < Observed_Obj_Count; i++) {
-    char* tokens[8];
-    char* ptr = strtok(ObservedObjects[i], ";");
-    int tokenCount = 0;
-    
-    while (ptr != NULL && tokenCount < 8) {
-        tokens[tokenCount++] = ptr;
-        ptr = strtok(NULL, ";");
+  for (int i = 0; i < Observed_Obj_Count; i++) {
+    int i1 = ObservedObjects[i].indexOf(';');
+    int i2 = ObservedObjects[i].indexOf(';', i1 + 1);
+    int i3 = ObservedObjects[i].indexOf(';', i2 + 1);
+    int i4 = ObservedObjects[i].indexOf(';', i3 + 1);
+    int i5 = ObservedObjects[i].indexOf(';', i4 + 1);
+    int i6 = ObservedObjects[i].indexOf(';', i5 + 1);
+    int i7 = ObservedObjects[i].indexOf(';', i6 + 1);
+    int tt;
+    String ha_;
+    String degs_;
+    if (i == (Observed_Obj_Count - 1)) {
+      tt = (((String(rtc.getTimeStr()).substring(0, 2).toInt()) * 60)  + (String(rtc.getTimeStr()).substring(3, 5).toInt())) - ((ObservedObjects[i].substring(i2 + 1, i2 + 3).toInt() * 60) + ObservedObjects[i].substring(i2 + 4, i3).toInt());
+      if (tt < 0) {
+        tt += 1440;
+      }
+    } else {
+      tt = ObservedObjects[i].substring(i7 + 1, ObservedObjects[i].length()).toInt();
     }
-    
-    if (tokenCount >= 8) {
-        int tt;
-        if (i == (Observed_Obj_Count - 1)) {
-            char timePart[6];
-            safeStringCopy(timePart, tokens[2], sizeof(timePart));
-            char* timePtr = strtok(timePart, ":");
-            int objMin = (atoi(timePtr) * 60) + atoi(strtok(NULL, ":"));
-            
-            char currentTime[10];
-            safeStringCopy(currentTime, rtc.getTimeStr(), sizeof(currentTime));
-            char* currPtr = strtok(currentTime, ":");
-            int currMin = (atoi(currPtr) * 60) + atoi(strtok(NULL, ":"));
-            
-            tt = currMin - objMin;
-            if (tt < 0) tt += 1440;
-        } else {
-            tt = atoi(tokens[7]);
-        }
-        
-        char composed[500];
-        snprintf(composed, sizeof(composed), "%s @%s for %dmin | Alt: %sdeg\n",
-                tokens[0], tokens[2], tt, tokens[6]);
-        tft.print(composed);
-    }
-}
+    degs_ = ObservedObjects[i].substring(i6 + 1, i7);
+    ha_ = ObservedObjects[i].substring(i5 + 1, i6);
+    String Composed = ObservedObjects[i].substring(0, i1) + " @" + ObservedObjects[i].substring(i2 + 1, i3) + " for " + String(tt) + "min | Alt: " + degs_ + "deg\n";
+    //Composed += "\nAt the time of observation the object was "+degs_+"deg. above horizon, with HA:"+ha_+" Environment was: " + ObservedObjects[i].substring(i3+1, i4) + " C and " + ObservedObjects[i].substring(i4+1, i5) + "% humidity. ";
+    tft.print(Composed);
+  }
 }
 
 ///////////////////////////////////////////////////// Star Sync Screen Graphics ///////////////////////////////////////////////////////
@@ -829,23 +822,32 @@ void drawConstelationScreen(int indx)
 }
 
 ///////////////////////////////////////////////////// On-Screen Messages ///////////////////////////////////////////////////////
-
 void OnScreenMsg(int Msg) {
+  // Msg = 1 -> Moving;
+  // Msg = 2 -> Tracking Off;
+  // Msg = 3 -> Object Not visible;
+  // Msg = 5 -> Stepper motors OFF
+  // Msg = 6 -> Backing UP ... to Home Pos;
+  // Msg = 7 -> Funny message when selecting the Earth;
+
   char obj_name[50];
-  char OBJ_NAME[50];
-  
+  String OBJ_NAME = "";
   if (!IS_NIGHTMODE) {
-    safeStringCopy(OBJ_NAME, "UI/day/", sizeof(OBJ_NAME));
+    OBJ_NAME = "UI/day/";
   } else {
-    safeStringCopy(OBJ_NAME, "UI/night/", sizeof(OBJ_NAME));
+    OBJ_NAME = "UI/night/";
   }
 
   if (Msg == 1) {
-    strncat(OBJ_NAME, "msg_1.bin", sizeof(OBJ_NAME) - strlen(OBJ_NAME) - 1);
+
+    OBJ_NAME += "msg_1.bin";
+
   } else if (Msg == 3) {
-    strncat(OBJ_NAME, "msg_3.bin", sizeof(OBJ_NAME) - strlen(OBJ_NAME) - 1);
+
+    OBJ_NAME += "msg_3.bin";
+
   } else if (Msg == 5) {
-    strncat(OBJ_NAME, "msg_5.bin", sizeof(OBJ_NAME) - strlen(OBJ_NAME) - 1);
+    OBJ_NAME += "msg_5.bin";
     if (IS_SOUND_ON) {
       SoundOn(note_C, 32);
       delay(200);
@@ -854,24 +856,30 @@ void OnScreenMsg(int Msg) {
       SoundOn(note_C, 32);
       delay(1000);
     }
+
   } else if (Msg == 6) {
-    strncat(OBJ_NAME, "msg_6.bin", sizeof(OBJ_NAME) - strlen(OBJ_NAME) - 1);
-  } else if (Msg == 7) {
-    strncat(OBJ_NAME, "msg_7.bin", sizeof(OBJ_NAME) - strlen(OBJ_NAME) - 1);
+
+    OBJ_NAME += "msg_6.bin";
+  }
+  else if (Msg == 7) {
+
+    OBJ_NAME += "msg_7.bin";
+
   }
 
-  if (SD.open(OBJ_NAME)) {
-    drawBin(OBJ_NAME, 66.5, 190, 187, 100);
+  if (SD.open(OBJ_NAME)/* && (IS_TRACKING)*/) {
+    OBJ_NAME.toCharArray(obj_name, 50);
+    drawBin(obj_name, 66.5, 190, 187, 100); // Drawing selected Object Tumbnail 140*140 Pixels
   }
 
-  char m1[20], m2[30], m3[20];
+  String m1, m2, m3;
+  //tft.fillRect(80, 215, 160, 100, MsgBox_bg );
+  //tft.drawRect(80, 215, 160, 100, MsgBox_t);
   tft.setTextColor(MsgBox_t);
-
   if (Msg == 2) {
-    safeStringCopy(m1, "WARNING", sizeof(m1));
-    safeStringCopy(m2, "TRACKING was", sizeof(m2));
-    safeStringCopy(m3, "Turned Off!", sizeof(m3));
-    
+    m1 = "WARNING";
+    m2 = "TRACKING was";
+    m3 = "Turned Off!";
     tft.cursorToXY(98, 230);
     tft.setTextScale(3);
     tft.println(m1);
@@ -883,15 +891,11 @@ void OnScreenMsg(int Msg) {
     delay(1000);
     drawMainScreen();
   } else if (Msg == 4) {
-    safeStringCopy(m1, "PICK AGAIN", sizeof(m1));
-    
-    char alt_str[10], ra_str[10];
-    snprintf(alt_str, sizeof(alt_str), "%d", (int)ALT);
-    snprintf(ra_str, sizeof(ra_str), "%d", (int)OBJECT_RA_H);
-    
-    snprintf(m2, sizeof(m2), "ALT=%s", alt_str);
-    snprintf(m3, sizeof(m3), "RA= %s", ra_str);
-    
+    m1 = "PICK AGAIN";
+    m2 = "ALT=" + String(ALT, 0);
+    m3 = "RA= " + String(OBJECT_RA_H, 0);
+    //Timer3.stop(); //
+    //IS_TRACKING = false;
     tft.cursorToXY(95, 230);
     tft.setTextScale(3);
     tft.println(m1);
@@ -901,10 +905,9 @@ void OnScreenMsg(int Msg) {
     tft.cursorToXY(95, 290);
     tft.print(m3);
   } else if (Msg == 8) {
-    safeStringCopy(m1, "Connected", sizeof(m1));
-    safeStringCopy(m2, "TO", sizeof(m2));
-    safeStringCopy(m3, "PHD2:)", sizeof(m3));
-    
+    m1 = "Connected";
+    m2 = "TO";
+    m3 = "PHD2:)";
     tft.cursorToXY(105, 230);
     tft.setTextScale(2);
     tft.println(m1);
@@ -915,10 +918,9 @@ void OnScreenMsg(int Msg) {
     tft.print(m3);
     delay(1000);
   } else if (Msg == 9) {
-    safeStringCopy(m1, "Disconnected", sizeof(m1));
-    safeStringCopy(m2, "FROM", sizeof(m2));
-    safeStringCopy(m3, "PHD2:)", sizeof(m3));
-    
+    m1 = "Disconnected";
+    m2 = "FROM";
+    m3 = "PHD2:)";
     tft.cursorToXY(87, 230);
     tft.setTextScale(2);
     tft.println(m1);
@@ -930,7 +932,6 @@ void OnScreenMsg(int Msg) {
     delay(1000);
   }
 }
-
 
 ////////////////////////////////////////////////// Day/Night Mode Graphics Changes ///////////////////////////////////////////////////////
 void considerDayNightMode() {
@@ -1009,18 +1010,13 @@ void considerDayNightMode() {
       drawStarSyncScreen();
     } else if (CURRENT_SCREEN == 13) {
       drawConstelationScreen(0);
-    } else if (CURRENT_SCREEN == 14) {
+    } else if ( CURRENT_SCREEN == 14) {
       drawAutoGuidingScreen();
-    } else if (CURRENT_SCREEN == SCREEN_LOAD_MENU) {
-      drawLoadMenu();
-    } else if (CURRENT_SCREEN == SCREEN_SEARCH_OBJECT) {
-      drawSearchScreen();
     }
   }
 }
 
 ///////////////////////////////////////////////////// Main Screen Menu Graphics ///////////////////////////////////////////////////////
-
 void drawMainScreen_Menu(int fill) {
   if (MAIN_SCREEN_MENU == 0) {
     if (IS_BT_MODE_ON == false) {
@@ -1053,19 +1049,44 @@ void drawMainScreen_Menu(int fill) {
       } else {
         drawBin("UI/night/btn_track_on.bin", 222, 375, 90, 44);
       }
+      tft.setTextScale(3);
+      tft.fillRect(0, 116, 320, 27, BLACK); // Modif JG, graphic bug
+      tft.cursorToXY(1, 119);
+      tft.setTextColor(btn_l_border);
+      if (OBJECT_NAME.length() > 7) {
+        tft.setTextScale(2);
+        tft.cursorToXY(1, 129);
+        tft.print("TRK:");
+      } else {
+        tft.setTextScale(3);
+        tft.print("TRACKING:");
+      }
+      tft.setTextColor(title_bg);
+      tft.print(OBJECT_NAME);
     } else {
       if (!IS_NIGHTMODE) {
         drawBin("UI/day/btn_track_off.bin", 222, 375, 90, 44);
       } else {
         drawBin("UI/night/btn_track_off.bin", 222, 375, 90, 44);
       }
+      tft.fillRect(0, 116, 320, 25, BLACK);
+      tft.setTextColor(l_text);
+      tft.setTextScale(3);
+      tft.cursorToXY(1, 119);
+      if (OBJECT_NAME.length() > 7) {
+        tft.setTextScale(2);
+        tft.cursorToXY(1, 129);
+        tft.print("OBS:");
+      } else {
+        tft.setTextScale(3);
+        tft.print("OBSERVING:");
+      }
+      tft.setTextColor(title_bg);
+      tft.print(OBJECT_NAME);
     }
-    
-// Display tracking status for menu 0
-    displayTrackingStatus();
-    
     MAIN_SCREEN_MENU = 0;
   } else {
+
     if (IS_BT_MODE_ON == false) {
       if (!IS_NIGHTMODE) {
         drawBin("UI/day/btn_coord.bin", 9, 375, 90, 44);
@@ -1112,10 +1133,6 @@ void drawMainScreen_Menu(int fill) {
         drawBin("UI/night/btn_gotoLast_off_st.bin", 222, 428, 90, 44);
       }
     }
-    
-// Display tracking status for menu 1
-    displayTrackingStatus();
-    
     MAIN_SCREEN_MENU = 1;
   }
 }
@@ -1162,15 +1179,13 @@ void drawStarMap() {
   tft.setTextScale(3);
   tft.print("StarMap");
 
-char PIC_StarMap[50];
-
-if (IS_NIGHTMODE) {
-    safeStringCopy(PIC_StarMap, "starmap/night/", 50);
-} else {
-    safeStringCopy(PIC_StarMap, "starmap/day/", 50);
-}
-
-
+  // Draw Star Map...
+  String PIC_StarMap = "starmap/";
+  if (IS_NIGHTMODE) {
+    PIC_StarMap += "night/";
+  } else {
+    PIC_StarMap += "day/";
+  }
 
   // Need to calculate which image to show
   // Images are named as in a matrix
@@ -1245,13 +1260,10 @@ if (IS_NIGHTMODE) {
     }
   }
 
-char My_Map[50];
-
-// Build the complete filename
-snprintf(My_Map, sizeof(My_Map), "%s%d-%d.bin", PIC_StarMap, map_r, map_c);
-drawBin(My_Map, 0, 30, 320, 450);
-
-
+  char My_Map[50];
+  PIC_StarMap += String(map_r) + "-" + String(map_c) + ".bin";
+  PIC_StarMap.toCharArray(My_Map, 50);
+  drawBin(My_Map, 0, 30, 320, 450);
 
   if (!IS_CUSTOM_MAP_SELECTED) {
     tft.drawCircle(telescope_X, telescope_Y, 20, btn_l_border);
@@ -1315,116 +1327,117 @@ void drawStatusBar()
   tft.cursorToXY(29, 18);
   tft.print("%");
 
-if (strcmp(TFT_Time, "AL-ON") == 0) {
+  if (TFT_Time == "AL-ON") {
     tft.cursorToXY(47, 18);
     tft.setTextColor(Button_State_ON);
     tft.print("AL-ON");
-}
+  }
 
-if (strcmp(TFT_Time, "30 s") == 0) {
+  if (TFT_Time == "30 s") {
     tft.cursorToXY(49, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("30 S");
-}
+  }
 
-if (strcmp(TFT_Time, "60 s") == 0) {
+  if (TFT_Time == "60 s") {
     tft.cursorToXY(49, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("60 S");
-}
+  }
 
-if (strcmp(TFT_Time, "2 min") == 0) {
+  if (TFT_Time == "2 min") {
     tft.cursorToXY(49, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("2 M");
-}
+  }
 
-if (strcmp(TFT_Time, "5 min") == 0) {
+  if (TFT_Time == "5 min") {
     tft.cursorToXY(49, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("5 M");
-}
+  }
 
-if (strcmp(TFT_Time, "10 min") == 0) {
+  if (TFT_Time == "10 min") {
     tft.cursorToXY(48, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("10 M");
-}
+  }
 
-if (strcmp(Tracking_Mode, "Celest") == 0) {
+  if (Tracking_Mode == "Celest") {
     tft.cursorToXY(88, 18);
     tft.setTextColor(Button_State_ON);
     tft.print("Celest");
   }
 
-if (strcmp(Tracking_Mode, "Lunar") == 0) {  
+  if (Tracking_Mode == "Lunar") {
     tft.cursorToXY(88, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("Lunar");
   }
 
-if (strcmp(Tracking_Mode, "Solar") == 0) {  
+  if (Tracking_Mode == "Solar") {
     tft.cursorToXY(88, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("Solar");
   } // modif JG was copied paste line here that make a graphic bug on mer flip status
 
-if (strcmp(Mer_Flip_State, "AUTO") == 0) {
+  if (Mer_Flip_State == "AUTO") {
+    //tft.fillRect(140, 14, 30, 10, title_bg);
     tft.cursorToXY(141, 18);
     tft.setTextColor(Button_State_ON);
     tft.print("AUTO");
   }
 
-if (strcmp(Mer_Flip_State, "OFF") == 0) {    
+  if (Mer_Flip_State == "OFF") {
     //tft.fillRect(140, 14, 30, 10, title_bg);
     tft.cursorToXY(141, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("OFF");
   }
 
-if (strcmp(Fan1_State, "ON") == 0) {
+  if (Fan1_State == "ON") {
     tft.cursorToXY(180, 18);
     tft.setTextColor(Button_State_ON);
     tft.print("ON");
-}
+  }
 
-if (strcmp(Fan1_State, "OFF") == 0) {
+  if (Fan1_State == "OFF") {
     tft.cursorToXY(180, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("OFF");
-}
+  }
 
-if (strcmp(GTMEM_State, "ARM") == 0) { // Add JG mem position ARM / Free
+  if (GTMEM_State == "ARM") { // Add JG mem position ARM / Free
     tft.cursorToXY(214, 18);
     tft.setTextColor(Button_State_ON);
     tft.print("ARM");
-}
+  }
 
-if (strcmp(GTMEM_State, "Free") == 0) {
+  if (GTMEM_State == "Free") {
     tft.cursorToXY(214, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("Free");
-}
+  }
 
-  if (strcmp(Sound_State, "ON") == 0) {
+  if (Sound_State == "ON") {
     tft.cursorToXY(252, 18);
     tft.setTextColor(Button_State_ON);
     tft.print("ON");
   }
 
-  if (strcmp(Sound_State, "OFF") == 0) {  
+  if (Sound_State == "OFF") {
     tft.cursorToXY(252, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("OFF");
   }
 
-  if (strcmp(Stepper_State, "ON") == 0) {  
+  if (Stepper_State == "ON") {
     tft.cursorToXY(292, 18);
     tft.setTextColor(Button_State_ON);
     tft.print("ON");
   }
 
-  if (strcmp(Stepper_State, "OFF") == 0) {  
+  if (Stepper_State == "OFF") {
     tft.cursorToXY(292, 18);
     tft.setTextColor(Button_State_OFF);
     tft.print("OFF");
@@ -1622,29 +1635,21 @@ void updateTriangleBrightness_opt()
     }
   }
 
-  // delete all triangle and percentage zone
-  tft.fillRect(5, 50, 250, 60, BLACK); // delete a large zone
-
-  // draw triangle
+  //Dark Triangle
   tft.fillTriangle(5, 100, 253, 100, 253, 50, BLACK);
 
-  // draw brightness triangle
-  if (TFT_Brightness > 0) {
-    int x_br = 5 + (TFT_Brightness * 250 / 255);
-    int tria_h = 50 + (50 * (255 - TFT_Brightness) / 255);
-    tft.fillTriangle(5, 100, x_br, 100, x_br, tria_h, Bright_triangle);
-  }
-
-  // display percentage
+  //Clear Triangle
+  int x_br = (TFT_Brightness - 192) * 4 + 1;
+  int tria_h = floor((255 - x_br) * 0.2000);
+  tft.fillTriangle(5, 100, x_br, 100, x_br, tria_h + 51, Bright_triangle);
   int bright_perc = (TFT_Brightness * 100 / 255);
-  
-  #ifdef serial_debug
-  Serial.print("Brightness: ");
-  Serial.print(TFT_Brightness);
-  Serial.print(" (");
-  Serial.print(bright_perc);
-  Serial.println("%)");
-  #endif
+
+#ifdef serial_debug
+  Serial.print("tria_h = ");
+  Serial.println(tria_h);
+  Serial.print("brightness: ");
+  Serial.println(TFT_Brightness);
+#endif
 
   tft.setTextScale(2);
   tft.setTextColor(btn_l_border);
@@ -1654,243 +1659,146 @@ void updateTriangleBrightness_opt()
   tft.setTextColor(btn_l_text);
 }
 
+
 ///////////////////////////////////////////////////// Draw Alignment Objects Function ///////////////////////////////////////////////////////
 
 void drawAlignObjects_ali()
 {
   tft.fillRect(0, 80, 320, 340, BLACK);
-if (ALLIGN_TYPE == 3) {
+  if (ALLIGN_TYPE == 3)
+  {
     int kk = STARS_PAGER * 24;
     for (int i = 0; i < 6; i++) {
-        for (int j = 0; j < 4; j++) {
-            // Check if star exists
-            if (Iter_Stars[kk][0] == '\0') {
-                break;
-            }
-            
-            // find separators
-            char* starData = Iter_Stars[kk];
-            char* i1 = strchr(starData, ';');
-            char* i2 = strchr(i1 + 1, ';');
-            
-            if (i1 == NULL || i2 == NULL) {
-                kk += 1;
-                continue;
-            }
-            
-            // extract S_NAME and C_NAME
-            char S_NAME[50];
-            char C_NAME[50];
-            
-            // C_NAME (from start to the first ;)
-            size_t c_name_len = i1 - starData;
-            strncpy(C_NAME, starData, c_name_len);
-            C_NAME[c_name_len] = '\0';
-            
-            // S_NAME (between the first and second ;)
-            size_t s_name_len = i2 - i1 - 1;
-            strncpy(S_NAME, i1 + 1, s_name_len);
-            S_NAME[s_name_len] = '\0';
-            
-            // check if S_NAME is empty
-            if (S_NAME[0] == '\0') {
-                break;
-            }
-            
-            // display
-            tft.fillRect(((j * 75) + 12), ((i * 50) + 85), 71, 45, messie_btn);
-            
-            // central position computing
-            int l = (strlen(S_NAME) / 2) * 6;
-            tft.cursorToXY(((j * 75) + (44 - l)), ((i * 50) + 93));
-            tft.setTextScale(1);
-            tft.print(S_NAME);
-            
-            tft.setTextScale(2);
-            tft.cursorToXY(((j * 75) + 29), ((i * 50) + 110));
-            tft.print(C_NAME);
-            
-            kk += 1;
-            
-            // check if we overflow the array
-            if (kk >= 50) {
-                break;
-            }
+      for (int j = 0; j < 4; j++) {
+        int i1 = Iter_Stars[kk].indexOf(';');
+        int i2 = Iter_Stars[kk].indexOf(';', i1 + 1);
+        String S_NAME = Iter_Stars[kk].substring(i1 + 1, i2);
+        String C_NAME = Iter_Stars[kk].substring(0, i1);
+        if (S_NAME == "") {
+          break;
         }
+        tft.fillRect(((j * 75) + 12), ((i * 50) + 85), 71, 45, messie_btn);
+        int l = (S_NAME.length() / 2) * 6;
+        tft.cursorToXY(((j * 75) + (44 - l)), ((i * 50) + 93));
+        tft.setTextScale(1);
+        tft.print(S_NAME);
+        tft.setTextScale(2);
+        tft.cursorToXY(((j * 75) + 29), ((i * 50) + 110));
+        tft.print(C_NAME);
+        kk += 1;
+      }
     }
-}
-else
-{
+  }
+  else
+  {
     int kk = STARS_PAGER * 24;
     for (int i = 0; i < 6; i++) {
-        for (int j = 0; j < 4; j++) {
-            const char* tempStar = Stars[kk];
-            char starData[100];
-            safeStringCopy(starData, tempStar, sizeof(starData));
-            
-            // find separators
-            char* i1 = strchr(starData, ';');
-            if (!i1) break;
-            
-            char* i2 = strchr(i1 + 1, ';');
-            if (!i2) break;
-            
-            // Extract S_NAME et C_NAME
-            char S_NAME[50], C_NAME[50];
-            
-            // S_NAME (between i1 and i2)
-            strncpy(S_NAME, i1 + 1, i2 - i1 - 1);
-            S_NAME[i2 - i1 - 1] = '\0';
-            
-            // C_NAME (start until i1)
-            strncpy(C_NAME, starData, i1 - starData);
-            C_NAME[i1 - starData] = '\0';
-            
-            if (strlen(S_NAME) == 0) {
-                break;
-            }
-            
-            tft.fillRect(((j * 75) + 12), ((i * 50) + 85), 71, 45, messie_btn);
-            int l = (strlen(S_NAME) / 2) * 6;
-            tft.cursorToXY(((j * 75) + (44 - l)), ((i * 50) + 93));
-            tft.setTextScale(1);
-            tft.print(S_NAME);
-            tft.setTextScale(2);
-            tft.cursorToXY(((j * 75) + 29), ((i * 50) + 110));
-            tft.print(C_NAME);
-            kk += 1;
-            
-            if (kk >= 203) break; // overflow protection
+      for (int j = 0; j < 4; j++) {
+        int i1 = Stars[kk].indexOf(';');
+        int i2 = Stars[kk].indexOf(';', i1 + 1);
+        String S_NAME = Stars[kk].substring(i1 + 1, i2);
+        String C_NAME = Stars[kk].substring(0, i1);
+        if (S_NAME == "") {
+          break;
         }
+        tft.fillRect(((j * 75) + 12), ((i * 50) + 85), 71, 45, messie_btn);
+        int l = (S_NAME.length() / 2) * 6;
+        tft.cursorToXY(((j * 75) + (44 - l)), ((i * 50) + 93));
+        tft.setTextScale(1);
+        tft.print(S_NAME);
+        tft.setTextScale(2);
+        tft.cursorToXY(((j * 75) + 29), ((i * 50) + 110));
+        tft.print(C_NAME);
+        kk += 1;
+      }
     }
-}
+  }
 }
 
 ///////////////////////////////////////////////////// Draw Load Objects Function ///////////////////////////////////////////////////////
-
 void drawLoadObjects() {
-  if (LOAD_SELECTOR >= 2 && LOAD_SELECTOR <= 4 || LOAD_SELECTOR >= 6 && LOAD_SELECTOR <= 9 || LOAD_SELECTOR >= 11 && LOAD_SELECTOR <= 14) {
-    // Add JG local load csv file
-    char in_char;
-    char items[256] = "";  // Buffer for a line
-    int items_index = 0;
-    int k = 0;
-    int l = 0;
-    
-    File dataFile = SD.open(CAT_NAME);
-    
-    while (dataFile.available()) {
-        in_char = dataFile.read();
-        
-        if (items_index < sizeof(items) - 1) {
-            items[items_index++] = in_char;
-        }
-        
-        l = l + 1;
-        if (in_char == '\n') {
-            items[items_index] = '\0';
-            safeStringCopy(OBJ_Array[k], items, sizeof(OBJ_Array[k]));
-            k = k + 1;
-            items_index = 0;
-            items[0] = '\0';
-        }
-    }
-
-    if (k < 240) { 
-        for (int i = 0; i < (240 - k); i++) { 
-            OBJ_Array[k + i][0] = '\0';
-        }
-    }
-
-    dataFile.close();
-    items_index = 0;
-    items[0] = '\0';
-    l = 0;
-    // End add JG local load csv file
+  if (LOAD_SELECTOR >= 2 && LOAD_SELECTOR <= 4 or LOAD_SELECTOR >= 6 && LOAD_SELECTOR <= 9 or LOAD_SELECTOR >= 11 && LOAD_SELECTOR <= 14) // Add JG, deleted all messier, treasure, custom conditions, now one condition for all catalogs and another one for solar system. 
+  {
+// Add JG local load csv file
+  char in_char;
+  String items = "";
+  int k = 0;
+  int l = 0;
+  File dataFile = SD.open(CAT_NAME);
+    while (dataFile.available())
+    {
+      in_char = dataFile.read();
+      items += in_char;
+      l = l + 1;
+      if (in_char == '\n') {
+      OBJ_Array[k] = items;
+        k = k + 1;
+        //          Serial.print(items);
+        items = "";
+      }}
+      if (k < 240 ){ for (int i = 0; i < (240-k); i++) { OBJ_Array[k+i] = ""; }} // Add JG to fill space with empty data, after last object, in case of object number < 240, array size
+  dataFile.close();
+  items = "";
+  k = 0;
+  l = 0;
+// End add JG local load csv file
     
     tft.setTextScale(1);
     int ll = OBJ_PAGER * 20;
     if (OBJ_PAGER >= 12) {ll = (OBJ_PAGER - 12) * 20;} // Add JG for second 240 item NGC catalog
+    for (int i = 0; i < 5; i++) {
+      for (int j = 0; j < 4; j++) {
 
-for (int i = 0; i < 5; i++) {
-    for (int j = 0; j < 4; j++) {
-        if (OBJ_Array[ll][0] == '\0') {
-            tft.fillRect(((j * 75) + 12), ((i * 50) + 160), 71, 45, BLACK);
-            ll++;
-            continue;
+        int i1 = OBJ_Array[ll].indexOf(';');
+        int i3 = OBJ_Array[ll].indexOf(';', OBJ_Array[ll].indexOf(';', i1 + 1) + 1);
+        int i4 = OBJ_Array[ll].indexOf(';', i3 + 1);
+        int i5 = OBJ_Array[ll].indexOf(';', i4 + 1);
+        String M_NAME = OBJ_Array[ll].substring(0, i1);
+        String C_NAME = OBJ_Array[ll].substring(i3 + 1, i4);
+        String MAG_NAME = OBJ_Array[ll].substring(i5 + 1, OBJ_Array[ll].indexOf(';', i5 + 1));
+        if (M_NAME == "")
+        {
+          tft.fillRect(((j * 75) + 12), ((i * 50) + 160), 71, 45, BLACK);
         }
-        
-        // Find separators
-        char* i1 = strchr(OBJ_Array[ll], ';');
-        char* i2 = (i1 != NULL) ? strchr(i1 + 1, ';') : NULL;
-        char* i3 = (i2 != NULL) ? strchr(i2 + 1, ';') : NULL;
-        char* i4 = (i3 != NULL) ? strchr(i3 + 1, ';') : NULL;
-        char* i5 = (i4 != NULL) ? strchr(i4 + 1, ';') : NULL;
-        char* i6 = (i5 != NULL) ? strchr(i5 + 1, ';') : NULL;
-        
-        // Extract parts
-        char M_NAME[50] = "", C_NAME[50] = "", MAG_NAME[50] = "";
-        
-        // M_NAME (from start until the first ;) - Column A
-        if (i1 != NULL) {
-            strncpy(M_NAME, OBJ_Array[ll], i1 - OBJ_Array[ll]);
-            M_NAME[i1 - OBJ_Array[ll]] = '\0';
-        }
-        
-        // C_NAME (constellation) - Column D (after 3rd separator)
-        if (i3 != NULL) {
-            if (i4 != NULL) {
-                // complete format : between i3 and i4
-                strncpy(C_NAME, i3 + 1, i4 - i3 - 1);
-                C_NAME[i4 - i3 - 1] = '\0';
-            } else {
-                // bright star format : after i3 until the end
-                safeStringCopy(C_NAME, i3 + 1, sizeof(C_NAME));
-            }
-        }
-        
-        // MAG_NAME (magnitude) - Column F (between i5 and i6) - for LOAD_SELECTOR > 2
-        if (LOAD_SELECTOR > 2 && i5 != NULL && i6 != NULL) {
-            strncpy(MAG_NAME, i5 + 1, i6 - i5 - 1);
-            MAG_NAME[i6 - i5 - 1] = '\0';
-        }
-        
-        DrawButton(((j * 75) + 12), ((i * 50) + 160), 71, 45, M_NAME, messie_btn, 0, l_text, 1, true);
-        
+        else
+        {
+          DrawButton(((j * 75) + 12), ((i * 50) + 160), 71, 45, M_NAME, messie_btn, 0, l_text, 1, true);
+          ll += 1;
         tft.setTextScale(1);
         tft.cursorToXY(((j * 75) + 15), ((i * 50) + 162));
-        tft.print(C_NAME); // Constellation
-        
-        if (LOAD_SELECTOR > 2 && MAG_NAME[0] != '\0') {
-            tft.cursorToXY(((j * 75) + 15), ((i * 50) + 192));
-            tft.print(MAG_NAME); // Magnitude
+        tft.print(C_NAME);
+        if (LOAD_SELECTOR > 2) {
+        tft.cursorToXY(((j * 75) + 15), ((i * 50) + 192));
+        tft.print(MAG_NAME);}
         }
-        
-        ll++;
+      }
     }
-}
   }
   else if (LOAD_SELECTOR == 1)  // solar system planets
   {
     tft.setTextScale(1);
     int ll = 0;
 
-    for (int i = 0; i < 5; i++) {
-      for (int j = 0; j < 4; j++) {
-        if (ll >= 11) {
+    for (int i = 0; i < 5; i++)
+    {
+      for (int j = 0; j < 4; j++)
+      {
+        if (ll >= 11)
+        {
           tft.fillRect(((j * 75) + 12), ((i * 50) + 160), 71, 45, BLACK);
-        } else {
-          const char* M_NAME = ss_planet_names[ll];
+        }
+        else
+        {
+          String M_NAME = ss_planet_names[ll];
           DrawButton(((j * 75) + 12), ((i * 50) + 160), 71, 45, M_NAME, messie_btn, 0, l_text, 1, true);
         }
         ll += 1;
       }
     }
   }
-}
+  }
 
 /////////////////////////////////////////////// Draw Sun Tracking Confirmation Screen ///////////////////////////////////////////////////////
-
 void drawConfirmSunTrack()
 {
   CURRENT_SCREEN = 15;
@@ -1918,15 +1826,56 @@ void drawConfirmSunTrack()
 
   DrawButton(10, 380, 140, 80, "YES", 0, btn_l_border, btn_l_text, 3, false);
   DrawButton(170, 380, 140, 80, "NO", 0, btn_l_border, btn_l_text, 3, false);
-}
+
 
   /////////////////////////////////// Touch Calibration Graphics ////////////////////////////////
+  /////////////////////// Unavailable for the Adafruit Version /////////////////////////////
+}
 
+  
+  //Add JG
+  
 void drawScreenCalibration()
   {
   CURRENT_SCREEN = 9;
   drawBin("UI/day/ScreenCalib.bin", 0, 0, 320, 480); 
   } 
+
+ // end Add JG
+  /*
+    while (!myTouch.touched()) {}
+
+    int tx = 0;
+    int ty = 0;
+
+    while (ty < 10 || ty > 150 && ty < 170 || ty > 310 || tx < 380 || tx > 460)
+    {
+      if(myTouch.touched())
+      {
+
+        p = myTouch.getPoint();
+        while (p.z < 600)
+        {
+          p = myTouch.getPoint(); //to remove noise
+          delay(200);
+        }
+
+        tx = (p.x - 257) / calx;
+        ty = (p.y - 445) / caly;
+
+        //Useful to debug touch:
+        #ifdef serial_debug
+          Serial.print(" -> Touched: x = ");
+          Serial.print(tx);
+          Serial.print(", y = ");
+          Serial.println(ty);
+        #endif
+      }
+      else  delay(100);
+    }
+    considerTouchInput(ty, tx);
+    }
+  */
 
 ///////////////////////////////////////////////////// Auto-Guiding Screen Graphics ///////////////////////////////////////////////////////
 void drawAutoGuidingScreen() {
